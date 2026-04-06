@@ -199,6 +199,9 @@ async function generateBundle(
 
 	const additionalCodePatches = codeCustomization?.additionalCodePatches ?? [];
 
+	// We still patch Next internals today because there is no stable/public Next Adapters API
+	// to express these integrations yet. Once that API lands, this block should be replaced with
+	// adapter hooks instead of AST transforms.
 	await applyCodePatches(options, tracedFiles, manifests, [
 		awsPatches.patchFetchCacheSetMissingWaitUntil,
 		awsPatches.patchFetchCacheForISR,

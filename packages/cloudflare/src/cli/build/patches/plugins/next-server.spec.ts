@@ -318,7 +318,7 @@ class NextNodeServer extends _baseserver.default {
 		`);
 	});
 
-	test("disable node middleware", () => {
+	test("disable node middleware (legacy Next.js)", () => {
 		expect(computePatchDiff("next-server.js", next15ServerCode, disableNodeMiddlewareRule))
 			.toMatchInlineSnapshot(`
 				"Index: next-server.js
