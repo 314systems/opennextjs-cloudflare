@@ -638,4 +638,4 @@ interface CacheTagKeyOptions {
 	tags: string[];
 }
 
-export default (opts?: ShardedDOTagCacheOptions) => new ShardedDOTagCache(opts);
+export default (opts?: ShardedDOTagCacheOptions): ShardedDOTagCache => new ShardedDOTagCache(opts);

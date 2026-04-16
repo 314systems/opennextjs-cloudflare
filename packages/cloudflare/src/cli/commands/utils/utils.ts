@@ -22,14 +22,14 @@ export type WithWranglerArgs<T = unknown> = T & {
 	env: string | undefined;
 };
 
-export const nextAppDir = process.cwd();
+export const nextAppDir: string = process.cwd();
 
 /**
  * Print headers and warnings for the CLI.
  *
  * @param command
  */
-export function printHeaders(command: string) {
+export function printHeaders(command: string): void {
 	printHeader(`Cloudflare ${command}`);
 
 	showWarningOnWindows();
