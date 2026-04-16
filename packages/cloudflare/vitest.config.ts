@@ -19,5 +19,8 @@ export default defineConfig({
 		dir: "src",
 		clearMocks: true,
 		restoreMocks: true,
+		coverage: {
+			provider: "v8",
+		},
 	},
 });
