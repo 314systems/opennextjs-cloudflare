@@ -108,4 +108,6 @@ class KVIncrementalCache implements IncrementalCache {
 	}
 }
 
-export default new KVIncrementalCache();
+const kvIncrementalCache: IncrementalCache = new KVIncrementalCache();
+
+export default kvIncrementalCache;

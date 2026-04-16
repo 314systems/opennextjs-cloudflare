@@ -88,4 +88,6 @@ class R2IncrementalCache implements IncrementalCache {
 	}
 }
 
-export default new R2IncrementalCache();
+const r2IncrementalCache: IncrementalCache = new R2IncrementalCache();
+
+export default r2IncrementalCache;
