@@ -1,5 +1,6 @@
 import assert from "node:assert";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { type CommentObject, parse, stringify } from "comment-json";
@@ -14,16 +15,7 @@ import { ensureR2Bucket } from "./ensure-r2-bucket.js";
  * @returns The path to Wrangler config file if it exists, undefined otherwise
  */
 export function findWranglerConfig(appDir: string): string | undefined {
-	const possibleExts = ["toml", "json", "jsonc"];
-
-	for (const ext of possibleExts) {
-		const path = join(appDir, `wrangler.${ext}`);
-		if (existsSync(path)) {
-			return path;
-		}
-	}
-
-	return undefined;
+	return ["toml", "json", "jsonc"].map((ext) => join(appDir, `wrangler.${ext}`)).find(existsSync);
 }
 
 /**
@@ -44,12 +36,12 @@ export async function createWranglerConfigFile(
 	projectDir: string,
 	defaultCompatDate = "2026-02-01"
 ): Promise<{ cachingEnabled: boolean }> {
-	const workerName = getWorkerName(projectDir);
+	const workerName = await getWorkerName(projectDir);
 	const compatibilityDate = (await getLatestCompatDate()) ?? defaultCompatDate;
 
-	const wranglerConfigStr = readFileSync(join(getPackageTemplatesDirPath(), "wrangler.jsonc"), "utf8")
-		.replaceAll("<WORKER_NAME>", workerName)
-		.replaceAll("<COMPATIBILITY_DATE>", compatibilityDate);
+	const wranglerConfigStr = await readFile(join(getPackageTemplatesDirPath(), "wrangler.jsonc"), "utf8")
+		.then((str) => str.replaceAll("<WORKER_NAME>", workerName))
+		.then((str) => str.replaceAll("<COMPATIBILITY_DATE>", compatibilityDate));
 
 	const wranglerConfig = parse(wranglerConfigStr) as CommentObject;
 
@@ -67,7 +59,7 @@ export async function createWranglerConfigFile(
 		delete wranglerConfig.r2_buckets;
 	}
 
-	writeFileSync(join(projectDir, "wrangler.jsonc"), stringify(wranglerConfig, null, "\t"));
+	await writeFile(join(projectDir, "wrangler.jsonc"), stringify(wranglerConfig, null, "\t"));
 
 	return { cachingEnabled };
 }
@@ -79,8 +71,8 @@ export async function createWranglerConfigFile(
  * @param projectDir The project directory containing the package.json file
  * @returns A valid worker name suitable for a Cloudflare Worker
  */
-function getWorkerName(projectDir: string): string {
-	const appName = getNameFromPackageJson(projectDir) ?? "app-name";
+async function getWorkerName(projectDir: string): Promise<string> {
+	const appName = (await getNameFromPackageJson(projectDir)) ?? "app-name";
 
 	return (
 		appName
@@ -98,9 +90,9 @@ function getWorkerName(projectDir: string): string {
  * @param sourceDir - The directory containing the `package.json` file.
  * @returns The package name if found, `undefined` otherwise.
  */
-function getNameFromPackageJson(sourceDir: string): string | undefined {
+async function getNameFromPackageJson(sourceDir: string): Promise<string | undefined> {
 	try {
-		const packageJsonStr = readFileSync(join(sourceDir, "package.json"), "utf8");
+		const packageJsonStr = await readFile(join(sourceDir, "package.json"), "utf8");
 		const packageJson: Record<string, string> = JSON.parse(packageJsonStr);
 		if (typeof packageJson.name === "string") return packageJson.name;
 	} catch {
