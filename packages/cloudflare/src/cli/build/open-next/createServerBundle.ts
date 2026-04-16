@@ -1,7 +1,8 @@
 // Copy-Edit of @opennextjs/aws packages/open-next/src/build/createServerBundle.ts
 // Adapted for cloudflare workers
 
-import fs from "node:fs";
+import { existsSync } from "node:fs";
+import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { loadMiddlewareManifest } from "@opennextjs/aws/adapters/config/util.js";
@@ -83,7 +84,7 @@ export async function createServerBundle(
 	);
 
 	// Find app dir routes
-	if (fs.existsSync(path.join(serverPath, "app"))) {
+	if (existsSync(path.join(serverPath, "app"))) {
 		const appPath = path.join(serverPath, "app");
 		buildHelper.traverseFiles(
 			appPath,
@@ -98,7 +99,7 @@ export async function createServerBundle(
 	}
 
 	// Find pages dir routes
-	if (fs.existsSync(path.join(serverPath, "pages"))) {
+	if (existsSync(path.join(serverPath, "pages"))) {
 		const pagePath = path.join(serverPath, "pages");
 		buildHelper.traverseFiles(
 			pagePath,
@@ -140,20 +141,20 @@ async function generateBundle(
 	//       We need to output the handler file inside the package path.
 	const packagePath = buildHelper.getPackagePath(options);
 	const outPackagePath = path.join(outputPath, packagePath);
-	fs.mkdirSync(outPackagePath, { recursive: true });
+	await mkdir(outPackagePath, { recursive: true });
 
 	const ext = fnOptions.runtime === "deno" ? "mjs" : "cjs";
 	// Normal cache
-	fs.copyFileSync(path.join(options.buildDir, `cache.${ext}`), path.join(outPackagePath, "cache.cjs"));
+	await copyFile(path.join(options.buildDir, `cache.${ext}`), path.join(outPackagePath, "cache.cjs"));
 
 	// Composable cache
-	fs.copyFileSync(
+	await copyFile(
 		path.join(options.buildDir, `composable-cache.${ext}`),
 		path.join(outPackagePath, "composable-cache.cjs")
 	);
 
 	if (fnOptions.runtime === "deno") {
-		addDenoJson(outputPath, packagePath);
+		await addDenoJson(outputPath, packagePath);
 	}
 
 	// Bundle next server if necessary
@@ -166,7 +167,7 @@ async function generateBundle(
 
 	// Copy middleware
 	if (!config.middleware?.external) {
-		fs.copyFileSync(
+		await copyFile(
 			path.join(options.buildDir, "middleware.mjs"),
 			path.join(outPackagePath, "middleware.mjs")
 		);
@@ -299,7 +300,7 @@ async function generateBundle(
 
 	const isMonorepo = monorepoRoot !== appPath;
 	if (isMonorepo) {
-		addMonorepoEntrypoint(outputPath, packagePath);
+		await addMonorepoEntrypoint(outputPath, packagePath);
 	}
 
 	installDependencies(outputPath, fnOptions.install);
@@ -310,7 +311,7 @@ async function generateBundle(
 
 	const shouldGenerateDocker = shouldGenerateDockerfile(fnOptions);
 	if (shouldGenerateDocker) {
-		fs.writeFileSync(
+		await writeFile(
 			path.join(outputPath, "Dockerfile"),
 			typeof shouldGenerateDocker === "string"
 				? shouldGenerateDocker
@@ -331,24 +332,24 @@ function shouldGenerateDockerfile(options: FunctionOptions) {
 
 // Add deno.json file to enable "bring your own node_modules" mode.
 // TODO: this won't be necessary in Deno 2. See https://github.com/denoland/deno/issues/23151
-function addDenoJson(outputPath: string, packagePath: string) {
+async function addDenoJson(outputPath: string, packagePath: string) {
 	const config = {
 		// Enable "bring your own node_modules" mode
 		// and allow `__proto__`
 		unstable: ["byonm", "fs", "unsafe-proto"],
 	};
-	fs.writeFileSync(path.join(outputPath, packagePath, "deno.json"), JSON.stringify(config, null, 2));
+	await writeFile(path.join(outputPath, packagePath, "deno.json"), JSON.stringify(config, null, 2));
 }
 
 //TODO: check if this PR is still necessary https://github.com/opennextjs/opennextjs-aws/pull/341
-function addMonorepoEntrypoint(outputPath: string, packagePath: string) {
+async function addMonorepoEntrypoint(outputPath: string, packagePath: string) {
 	// Note: in the monorepo case, the handler file is output to
 	//       `.next/standalone/package/path/index.mjs`, but we want
 	//       the Lambda function to be able to find the handler at
 	//       the root of the bundle. We will create a dummy `index.mjs`
 	//       that re-exports the real handler.
 
-	fs.writeFileSync(
+	await writeFile(
 		path.join(outputPath, "index.mjs"),
 		`export { handler } from "./${normalizePath(packagePath)}/index.mjs";`
 	);

@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -51,19 +50,19 @@ const optionalDependencies = [
  * Bundle the Open Next server.
  */
 export async function bundleServer(buildOpts: BuildOptions, projectOpts: ProjectOptions): Promise<void> {
-	copyPackageCliFiles(packageDistDir, buildOpts);
+	await copyPackageCliFiles(packageDistDir, buildOpts);
 
 	const { appPath, outputDir, monorepoRoot, debug } = buildOpts;
 	const dotNextPath = path.join(outputDir, "server-functions/default", getPackagePath(buildOpts), ".next");
 	const serverFiles = path.join(dotNextPath, "required-server-files.json");
-	const nextConfig = JSON.parse(fs.readFileSync(serverFiles, "utf-8")).config;
+	const nextConfig = JSON.parse(await readFile(serverFiles, "utf-8")).config;
 
 	const useTurbopack = buildHelper.getBundlerRuntime(buildOpts) === "turbopack";
 
 	console.log(`\x1b[35m⚙️ Bundling the OpenNext server...\n\x1b[0m`);
 
 	await patchWebpackRuntime(buildOpts);
-	const useOg = patchVercelOgLibrary(buildOpts);
+	const useOg = await patchVercelOgLibrary(buildOpts);
 
 	const outputPath = path.join(outputDir, "server-functions", "default");
 	const packagePath = getPackagePath(buildOpts);
@@ -166,13 +165,13 @@ export async function bundleServer(buildOpts: BuildOptions, projectOpts: Project
 		platform: "node",
 	});
 
-	fs.writeFileSync(openNextServerBundle + ".meta.json", JSON.stringify(result.metafile, null, 2));
+	await writeFile(openNextServerBundle + ".meta.json", JSON.stringify(result.metafile, null, 2));
 
 	await updateWorkerBundledCode(openNextServerBundle);
 
 	const isMonorepo = monorepoRoot !== appPath;
 	if (isMonorepo) {
-		fs.writeFileSync(
+		await writeFile(
 			path.join(outputPath, "handler.mjs"),
 			`export { handler } from "./${normalizePath(packagePath)}/handler.mjs";`
 		);

@@ -1,4 +1,5 @@
-import { copyFileSync, existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { copyFile, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
@@ -16,7 +17,7 @@ type TraceInfo = { version: number; files: string[] };
  * @param buildOpts Build options.
  * @returns Whether the @vercel/og library is used.
  */
-export function patchVercelOgLibrary(buildOpts: BuildOptions): boolean {
+export async function patchVercelOgLibrary(buildOpts: BuildOptions): Promise<boolean> {
 	const { appBuildOutputPath, outputDir } = buildOpts;
 
 	const functionsPath = path.join(outputDir, "server-functions/default");
@@ -28,7 +29,7 @@ export function patchVercelOgLibrary(buildOpts: BuildOptions): boolean {
 		windowsPathsNoEscape: true,
 	})) {
 		// Look for the Node version of the traced @vercel/og files
-		const traceInfo: TraceInfo = JSON.parse(readFileSync(traceInfoPath, { encoding: "utf8" }));
+		const traceInfo: TraceInfo = JSON.parse(await readFile(traceInfoPath, { encoding: "utf8" }));
 		const tracedNodePath = traceInfo.files.find((p) => p.endsWith("@vercel/og/index.node.js"));
 		if (!tracedNodePath) continue;
 
@@ -46,7 +47,7 @@ export function patchVercelOgLibrary(buildOpts: BuildOptions): boolean {
 				tracedNodePath.replace("index.node.js", "index.edge.js")
 			);
 
-			copyFileSync(tracedEdgePath, outputEdgePath);
+			await copyFile(tracedEdgePath, outputEdgePath);
 
 			// On Next 16.2 and above, we also need to copy the yoga.wasm file used by the library.
 			const tracedWasmPath = path.join(
@@ -54,7 +55,7 @@ export function patchVercelOgLibrary(buildOpts: BuildOptions): boolean {
 				tracedNodePath.replace("index.node.js", "yoga.wasm")
 			);
 			if (existsSync(tracedWasmPath)) {
-				copyFileSync(tracedWasmPath, path.join(outputDir, "yoga.wasm"));
+				await copyFile(tracedWasmPath, path.join(outputDir, "yoga.wasm"));
 			}
 		}
 
@@ -62,11 +63,11 @@ export function patchVercelOgLibrary(buildOpts: BuildOptions): boolean {
 		{
 			const ast = parseFile(outputEdgePath);
 			const { edits, matches } = patchVercelOgFallbackFont(ast);
-			writeFileSync(outputEdgePath, ast.commitEdits(edits));
+			await writeFile(outputEdgePath, ast.commitEdits(edits));
 
 			if (matches.length > 0) {
 				const fontFileName = matches[0]!.getMatch("PATH")!.text();
-				renameSync(path.join(outputDir, fontFileName), path.join(outputDir, `${fontFileName}.bin`));
+				await rename(path.join(outputDir, fontFileName), path.join(outputDir, `${fontFileName}.bin`));
 			}
 		}
 
@@ -77,7 +78,7 @@ export function patchVercelOgLibrary(buildOpts: BuildOptions): boolean {
 
 			const ast = parseFile(routeFilePath);
 			const { edits } = patchVercelOgImport(ast);
-			writeFileSync(routeFilePath, ast.commitEdits(edits));
+			await writeFile(routeFilePath, ast.commitEdits(edits));
 		}
 	}
 
