@@ -60,7 +60,10 @@ interface PackageJson {
  * @param json The package.json object
  * @returns An object with the transformed package.json and a boolean indicating if the build condition was found
  */
-export function transformPackageJson(json: PackageJson) {
+export function transformPackageJson(json: PackageJson): {
+	transformed: PackageJson;
+	hasBuildCondition: boolean;
+} {
 	const transformed: PackageJson = structuredClone(json);
 	let hasBuildCondition = false;
 	if (json.exports) {

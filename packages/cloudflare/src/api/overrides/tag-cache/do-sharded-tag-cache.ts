@@ -400,7 +400,10 @@ class ShardedDOTagCache implements NextModeTagCache {
 	}: {
 		tags: string[];
 		generateAllReplicas?: boolean;
-	}) {
+	}): {
+		doId: DOId;
+		tags: string[];
+	}[] {
 		// Here we'll start by splitting soft tags from hard tags
 		// This will greatly increase the cache hit rate for the soft tag (which are the most likely to cause issue because of load)
 		const softTags = this.generateDOIdArray({ tags, shardType: "soft", generateAllReplicas });

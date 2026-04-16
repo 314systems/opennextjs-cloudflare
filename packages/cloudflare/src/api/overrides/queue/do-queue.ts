@@ -3,7 +3,7 @@ import { IgnorableError } from "@opennextjs/aws/utils/error.js";
 
 import { getCloudflareContext } from "../../cloudflare-context.js";
 
-export default {
+const queue: Queue = {
 	name: "durable-queue",
 	send: async (msg: QueueMessage): Promise<void> => {
 		const durableObject = getCloudflareContext().env.NEXT_CACHE_DO_QUEUE;
@@ -15,4 +15,6 @@ export default {
 			...msg,
 		});
 	},
-} satisfies Queue;
+};
+
+export default queue;
