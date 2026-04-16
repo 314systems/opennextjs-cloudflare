@@ -50,7 +50,10 @@ export function printHeaders(command: string): void {
  * @returns The compiled OpenNext config and the build directory.
  *
  */
-export async function compileConfig(configPath: string | undefined) {
+export async function compileConfig(configPath: string | undefined): Promise<{
+	config: OpenNextConfig;
+	buildDir: string;
+}> {
 	if (configPath && !existsSync(configPath)) {
 		throw new Error(`Custom config file not found at ${configPath}`);
 	}
@@ -80,7 +83,7 @@ export async function compileConfig(configPath: string | undefined) {
  *
  * @returns OpenNext config.
  */
-export async function retrieveCompiledConfig() {
+export async function retrieveCompiledConfig(): Promise<{ config: OpenNextConfig }> {
 	const configPath = path.join(nextAppDir, ".open-next/.build/open-next.config.edge.mjs");
 
 	if (!existsSync(configPath)) {
@@ -120,7 +123,9 @@ export function getNormalizedOptions(
  * @param args Wrangler environment and config path.
  * @returns Wrangler config.
  */
-export async function readWranglerConfig(args: WithWranglerArgs) {
+export async function readWranglerConfig(
+	args: WithWranglerArgs
+): Promise<ReturnType<typeof unstable_readConfig>> {
 	// Note: `unstable_readConfig` is sync as of wrangler 4.60.0
 	//       But it will eventually become async.
 	//       See https://github.com/cloudflare/workers-sdk/pull/12031

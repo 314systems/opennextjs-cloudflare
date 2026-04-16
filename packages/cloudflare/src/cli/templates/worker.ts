@@ -13,8 +13,8 @@ export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js
 //@ts-expect-error: Will be resolved by wrangler build
 export { BucketCachePurge } from "./.build/durable-objects/bucket-cache-purge.js";
 
-export default {
-	async fetch(request, env, ctx) {
+const worker: ExportedHandler<CloudflareEnv> = {
+	async fetch(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
 		return runWithCloudflareRequestContext(request, env, ctx, async () => {
 			const response = maybeGetSkewProtectionResponse(request);
 
@@ -51,4 +51,6 @@ export default {
 			return handler(reqOrResp, env, ctx, request.signal);
 		});
 	},
-} satisfies ExportedHandler<CloudflareEnv>;
+};
+
+export default worker;
