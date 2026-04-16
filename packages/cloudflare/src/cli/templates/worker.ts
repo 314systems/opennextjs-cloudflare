@@ -1,17 +1,12 @@
-//@ts-expect-error: Will be resolved by wrangler build
 import { handleCdnCgiImageRequest, handleImageRequest } from "./cloudflare/images.js";
-//@ts-expect-error: Will be resolved by wrangler build
 import { runWithCloudflareRequestContext } from "./cloudflare/init.js";
-//@ts-expect-error: Will be resolved by wrangler build
 import { maybeGetSkewProtectionResponse } from "./cloudflare/skew-protection.js";
 // @ts-expect-error: Will be resolved by wrangler build
 import { handler as middlewareHandler } from "./middleware/handler.mjs";
-//@ts-expect-error: Will be resolved by wrangler build
-export { DOQueueHandler } from "./.build/durable-objects/queue.js";
-//@ts-expect-error: Will be resolved by wrangler build
-export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js";
-//@ts-expect-error: Will be resolved by wrangler build
+
 export { BucketCachePurge } from "./.build/durable-objects/bucket-cache-purge.js";
+export { DOQueueHandler } from "./.build/durable-objects/queue.js";
+export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js";
 
 const worker: ExportedHandler<CloudflareEnv> = {
 	async fetch(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
