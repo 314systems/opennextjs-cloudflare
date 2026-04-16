@@ -1,13 +1,28 @@
 import pm from "picomatch";
 import { describe, expect, it } from "vitest";
 
-import type { LocalPattern } from "./images.js";
 import {
 	detectImageContentType,
-	matchLocalPattern,
-	matchRemotePattern as mRP,
+	matchLocalPattern as _matchLocalPattern,
+	matchRemotePattern as _matchRemotePattern,
 	parseCdnCgiImageRequest,
 } from "./images.js";
+
+const mRP = (p: Record<string, unknown>, url: URL) =>
+	_matchRemotePattern(
+		{
+			...p,
+			hostname:
+				typeof p.hostname === "object" && p.hostname !== null && "source" in p.hostname
+					? (p.hostname as RegExp).source
+					: (p.hostname as string),
+			pathname:
+				typeof p.pathname === "object" && p.pathname !== null && "source" in p.pathname
+					? (p.pathname as RegExp).source
+					: ((p.pathname as string | undefined) ?? pm.makeRe("**", { dot: true }).source),
+		} as Parameters<typeof _matchRemotePattern>[0],
+		url
+	);
 
 /**
  * See https://github.com/vercel/next.js/blob/64702a9/test/unit/image-optimizer/match-remote-pattern.test.ts
@@ -371,8 +386,17 @@ describe("matchRemotePattern", () => {
  * See https://github.com/vercel/next.js/blob/64702a9/test/unit/image-optimizer/match-local-pattern.test.ts
  */
 describe("matchLocalPattern", () => {
-	const mLP = (p: LocalPattern, urlPathAndQuery: string) =>
-		matchLocalPattern(p, new URL(urlPathAndQuery, "http://n"));
+	const mLP = (p: Record<string, unknown>, urlPathAndQuery: string) =>
+		_matchLocalPattern(
+			{
+				...p,
+				pathname:
+					typeof p.pathname === "object" && p.pathname !== null && "source" in p.pathname
+						? (p.pathname as RegExp).source
+						: ((p.pathname as string | undefined) ?? pm.makeRe("**", { dot: true }).source),
+			} as Parameters<typeof _matchLocalPattern>[0],
+			new URL(urlPathAndQuery, "http://n")
+		);
 
 	it("should match anything when no pattern is defined", () => {
 		const p = {} as const;

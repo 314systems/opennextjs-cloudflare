@@ -16,20 +16,20 @@ import { getCloudflareContext } from "../../cloudflare-context.js";
 const resolver: AssetResolver = {
 	name: "cloudflare-asset-resolver",
 	async maybeGetAssetResult(event: InternalEvent) {
+		const { method, headers, rawPath } = event;
+
+		if (method !== "GET" && method !== "HEAD") {
+			return undefined;
+		}
+
 		const { ASSETS } = getCloudflareContext().env;
 
-		if (!ASSETS || !isUserWorkerFirst(globalThis.__ASSETS_RUN_WORKER_FIRST__, event.rawPath)) {
+		if (!ASSETS || !isUserWorkerFirst(globalThis.__ASSETS_RUN_WORKER_FIRST__, rawPath)) {
 			// Only handle assets when the user worker runs first for the path
 			return undefined;
 		}
 
-		const { method, headers } = event;
-
-		if (method !== "GET" && method != "HEAD") {
-			return undefined;
-		}
-
-		const url = new URL(event.rawPath, "https://assets.local");
+		const url = new URL(rawPath, "https://assets.local");
 		const response = await ASSETS.fetch(url, {
 			headers,
 			method,
@@ -83,30 +83,27 @@ export function isUserWorkerFirst(runWorkerFirst: boolean | string[] | undefined
 
 	let hasPositiveMatch = false;
 
-	for (let rule of runWorkerFirst) {
-		let isPositiveRule = true;
+	for (const rule of runWorkerFirst) {
+		const isNegative = rule.startsWith("!");
+		const pattern = isNegative ? rule.slice(1) : rule;
 
-		if (rule.startsWith("!")) {
-			rule = rule.slice(1);
-			isPositiveRule = false;
-		} else if (hasPositiveMatch) {
+		if (!isNegative && hasPositiveMatch) {
 			// Do not look for more positive rules once we have a match
 			continue;
 		}
 
 		// - Escapes special characters
-		// - Replaces * with .*
-		const match = new RegExp(`^${rule.replace(/([[\]().*+?^$|{}\\])/g, "\\$1").replace("\\*", ".*")}$`).test(
-			pathname
-		);
+		// - Replaces all \* with .* to handle multiple wildcards
+		const escapedPattern = pattern.replace(/[[\]().*+?^$|{}\\]/g, "\\$&").replace(/\\\*/g, ".*");
+
+		const match = new RegExp(`^${escapedPattern}$`).test(pathname);
 
 		if (match) {
-			if (isPositiveRule) {
-				hasPositiveMatch = true;
-			} else {
+			if (isNegative) {
 				// Exit early when there is a negative match
 				return false;
 			}
+			hasPositiveMatch = true;
 		}
 	}
 

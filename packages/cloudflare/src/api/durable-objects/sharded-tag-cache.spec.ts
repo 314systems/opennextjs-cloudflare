@@ -59,7 +59,7 @@ describe("DOShardedTagCache class", () => {
 					{ tag: "tag1", revalidatedAt: 1000, stale: 1000, expire: null },
 					{ tag: "tag2", revalidatedAt: 2000, stale: 1500, expire: 9999 },
 				],
-			} as ReturnType<SqlStorage["exec"]>);
+			} as unknown as ReturnType<SqlStorage["exec"]>);
 			const result = await cache.getTagData(["tag1", "tag2"]);
 			expect(result).toEqual({
 				tag1: { revalidatedAt: 1000, stale: 1000, expire: null },

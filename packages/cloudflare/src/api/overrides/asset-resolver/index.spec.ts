@@ -27,7 +27,7 @@ describe("maybeGetAssetResult", () => {
 			method,
 			rawPath,
 			headers: { accept: "*/*" },
-		}) as Parameters<typeof resolver.maybeGetAssetResult>[0];
+		}) as unknown as Parameters<typeof resolver.maybeGetAssetResult>[0];
 
 	test("GET request returns response body", async () => {
 		const body = new ReadableStream();
