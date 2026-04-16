@@ -55,7 +55,7 @@ export async function purgeCacheByTags(tags: string[]): Promise<void> {
 	}
 }
 
-export async function internalPurgeCacheByTags(env: CloudflareEnv, tags: string[]) {
+export async function internalPurgeCacheByTags(env: CloudflareEnv, tags: string[]): Promise<string> {
 	if (!env.CACHE_PURGE_ZONE_ID || !env.CACHE_PURGE_API_TOKEN) {
 		// THIS IS A NO-OP
 		error("No cache zone ID or API token provided. Skipping cache purge.");
