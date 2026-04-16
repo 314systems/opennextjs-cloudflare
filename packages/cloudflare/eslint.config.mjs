@@ -1,11 +1,12 @@
 import pluginJs from "@eslint/js";
+import { defineConfig } from "eslint/config";
 import importPlugin from "eslint-plugin-import";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-export default [
+export default defineConfig([
 	{
 		ignores: ["dist", "**/test-snapshots", "**/test-fixtures"],
 	},
@@ -42,4 +43,4 @@ export default [
 			"import/extensions": ["error", "always", { checkTypeImports: true }],
 		},
 	},
-];
+]);
