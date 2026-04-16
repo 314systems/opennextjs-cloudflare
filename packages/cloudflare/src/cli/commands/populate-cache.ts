@@ -94,7 +94,7 @@ export async function populateCache(
 	wranglerConfig: WranglerConfig,
 	populateCacheOptions: PopulateCacheOptions,
 	envVars: WorkerEnvVar
-) {
+): Promise<void> {
 	const { incrementalCache, tagCache } = config.default.override ?? {};
 
 	if (!fs.existsSync(buildOpts.outputDir)) {
@@ -625,7 +625,7 @@ function populateStaticAssetsIncrementalCache(options: BuildOptions) {
  *
  * Consumes 2 positional parameters.
  */
-export function addPopulateCacheCommand<T extends yargs.Argv>(y: T) {
+export function addPopulateCacheCommand<T extends yargs.Argv>(y: T): yargs.Argv {
 	return y.command("populateCache", "Populate the cache for a built Next.js app", (c) =>
 		c
 			.command(
@@ -644,7 +644,7 @@ export function addPopulateCacheCommand<T extends yargs.Argv>(y: T) {
 	);
 }
 
-export function withPopulateCacheOptions<T extends yargs.Argv>(args: T) {
+export function withPopulateCacheOptions<T extends yargs.Argv>(args: T): yargs.Argv {
 	return withWranglerOptions(args).options("cacheChunkSize", {
 		type: "number",
 		desc: "Number of entries per chunk when populating the cache",

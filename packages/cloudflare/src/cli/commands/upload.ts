@@ -75,7 +75,7 @@ export async function uploadCommand(args: WithWranglerArgs<{ cacheChunkSize?: nu
  *
  * Consumes 1 positional parameter.
  */
-export function addUploadCommand<T extends yargs.Argv>(y: T) {
+export function addUploadCommand<T extends yargs.Argv>(y: T): yargs.Argv {
 	return y.command(
 		"upload [args..]",
 		"Upload a built OpenNext app to Cloudflare Workers",

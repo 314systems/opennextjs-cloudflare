@@ -101,7 +101,10 @@ export async function retrieveCompiledConfig() {
  * @param buildDir Directory to use when building the application
  * @returns Normalized options.
  */
-export function getNormalizedOptions(config: OpenNextConfig, buildDir = nextAppDir) {
+export function getNormalizedOptions(
+	config: OpenNextConfig,
+	buildDir: string = nextAppDir
+): ReturnType<typeof normalizeOptions> {
 	const require = createRequire(import.meta.url);
 	const openNextDistDir = path.dirname(require.resolve("@opennextjs/aws/index.js"));
 
@@ -127,7 +130,7 @@ export async function readWranglerConfig(args: WithWranglerArgs) {
 /**
  * Adds flags for the wrangler config path and environment to the yargs configuration.
  */
-export function withWranglerOptions<T extends yargs.Argv>(args: T) {
+export function withWranglerOptions<T extends yargs.Argv>(args: T): yargs.Argv {
 	return args
 		.option("config", {
 			type: "string",

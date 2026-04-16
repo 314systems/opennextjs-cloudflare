@@ -324,7 +324,7 @@ async function maybeCreateNextConfigFileIfMissing(
 /**
  * Add the `migrate` command to yargs configuration.
  */
-export function addMigrateCommand<T extends yargs.Argv>(y: T) {
+export function addMigrateCommand<T extends yargs.Argv>(y: T): yargs.Argv {
 	return y.command(
 		"migrate",
 		"Set up the OpenNext Cloudflare adapter in an existing Next.js project",

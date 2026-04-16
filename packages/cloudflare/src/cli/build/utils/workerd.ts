@@ -76,7 +76,10 @@ export function transformPackageJson(json: PackageJson) {
 	return { transformed, hasBuildCondition };
 }
 
-export async function copyWorkerdPackages(options: BuildOptions, nodePackages: Map<string, string>) {
+export async function copyWorkerdPackages(
+	options: BuildOptions,
+	nodePackages: Map<string, string>
+): Promise<void> {
 	const isNodeModuleRegex = getCrossPlatformPathRegex(`.*/node_modules/(?<pkg>.*)`, { escape: false });
 
 	// Copy full external packages when they use "workerd" build condition

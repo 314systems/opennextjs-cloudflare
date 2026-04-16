@@ -56,7 +56,7 @@ export async function previewCommand(
  *
  * Consumes 1 positional parameter.
  */
-export function addPreviewCommand<T extends yargs.Argv>(y: T) {
+export function addPreviewCommand<T extends yargs.Argv>(y: T): yargs.Argv {
 	return y.command(
 		"preview [args..]",
 		"Preview a built OpenNext app with a Wrangler dev server",

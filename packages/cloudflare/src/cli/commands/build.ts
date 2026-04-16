@@ -62,7 +62,7 @@ export async function buildCommand(
  *
  * Consumes 1 positional parameter.
  */
-export function addBuildCommand<T extends yargs.Argv>(y: T) {
+export function addBuildCommand<T extends yargs.Argv>(y: T): yargs.Argv {
 	return y.command(
 		"build [args..]",
 		"Build an OpenNext Cloudflare worker",
