@@ -155,11 +155,31 @@ export function withWranglerOptions<T extends yargs.Argv>(args: T): yargs.Argv {
 }
 
 type WranglerInputArgs = {
-	configPath: string | undefined;
-	config: string | undefined;
-	env: string | undefined;
+	configPath?: string | undefined;
+	config?: string | undefined;
+	env?: string | undefined;
 	remote?: boolean | undefined;
 };
+
+function asString(value: unknown): string | undefined {
+	return typeof value === "string" ? value : undefined;
+}
+
+function asBoolean(value: unknown): boolean | undefined {
+	return typeof value === "boolean" ? value : undefined;
+}
+
+function asStringOrNumberArray(value: unknown): (string | number)[] | undefined {
+	if (!Array.isArray(value)) {
+		return undefined;
+	}
+
+	if (value.every((item) => typeof item === "string" || typeof item === "number")) {
+		return value;
+	}
+
+	return undefined;
+}
 
 /**
  *
@@ -168,14 +188,18 @@ type WranglerInputArgs = {
  */
 function getWranglerArgs(
 	args: WranglerInputArgs & {
-		_: (string | number)[];
 		args?: (string | number)[];
 	}
 ): string[] {
+	const configPath = asString(args.configPath);
+	const config = asString(args.config);
+	const env = asString(args.env);
+	const remote = asBoolean(args.remote);
+
 	if (args.configPath) {
 		logger.warn("The `--configPath` flag is deprecated, please use `--config` instead.");
 
-		if (args.config) {
+		if (config) {
 			logger.error(
 				"Multiple config flags found. Please use the `--config` flag for your Wrangler config path."
 			);
@@ -184,10 +208,10 @@ function getWranglerArgs(
 	}
 
 	return [
-		...(args.configPath ? ["--config", args.configPath] : []),
-		...(args.config ? ["--config", args.config] : []),
-		...(args.env ? ["--env", args.env] : []),
-		...(args.remote ? ["--remote"] : []),
+		...(configPath ? ["--config", configPath] : []),
+		...(config ? ["--config", config] : []),
+		...(env ? ["--env", env] : []),
+		...(remote ? ["--remote"] : []),
 		// Note: the `args` array contains unrecognised flags.
 		...(args.args?.map((a) => `${a}`) ?? []),
 	];
@@ -198,12 +222,24 @@ function getWranglerArgs(
  * @param args
  * @returns The inputted args, and an array of arguments that can be given to wrangler commands, including the `--config` and `--env` args.
  */
-export function withWranglerPassthroughArgs<T extends yargs.ArgumentsCamelCase<WranglerInputArgs>>(
+export function withWranglerPassthroughArgs<T extends yargs.ArgumentsCamelCase<Record<string, unknown>>>(
 	args: T
 ): WithWranglerArgs<T> {
+	const configPath = asString(args.configPath);
+	const config = asString(args.config);
+	const env = asString(args.env);
+	const remote = asBoolean(args.remote);
+
 	return {
 		...args,
-		wranglerConfigPath: args.config ?? args.configPath,
-		wranglerArgs: getWranglerArgs(args),
+		env,
+		wranglerConfigPath: config ?? configPath,
+		wranglerArgs: getWranglerArgs({
+			configPath,
+			config,
+			env,
+			remote,
+			args: asStringOrNumberArray(args.args),
+		}),
 	};
 }

@@ -88,10 +88,7 @@ declare global {
 	}
 }
 
-export type CloudflareContext<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
-> = {
+export type CloudflareContext = {
 	/**
 	 * the worker's [bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/)
 	 */
@@ -99,11 +96,11 @@ export type CloudflareContext<
 	/**
 	 * the request's [cf properties](https://developers.cloudflare.com/workers/runtime-apis/request/#the-cf-property-requestinitcfproperties)
 	 */
-	cf: CfProperties | undefined;
+	cf: RequestInitCfProperties | undefined;
 	/**
 	 * the current [execution context](https://developers.cloudflare.com/workers/runtime-apis/context)
 	 */
-	ctx: Context;
+	ctx: ExecutionContext;
 };
 
 /**
@@ -118,11 +115,8 @@ const cloudflareContextSymbol = Symbol.for("__cloudflare-context__");
 /**
  * `globalThis` override for internal usage
  */
-type InternalGlobalThis<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
-> = typeof globalThis & {
-	[cloudflareContextSymbol]: CloudflareContext<CfProperties, Context> | undefined;
+type InternalGlobalThis = typeof globalThis & {
+	[cloudflareContextSymbol]: CloudflareContext | undefined;
 	__NEXT_DATA__: Record<string, unknown>;
 };
 
@@ -139,42 +133,25 @@ type GetCloudflareContextOptions = {
  *
  * @returns the cloudflare context
  */
-export function getCloudflareContext<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(options: { async: true }): Promise<CloudflareContext<CfProperties, Context>>;
-export function getCloudflareContext<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(options?: { async: false }): CloudflareContext<CfProperties, Context>;
-export function getCloudflareContext<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(
-	options: GetCloudflareContextOptions = { async: false }
-): CloudflareContext<CfProperties, Context> | Promise<CloudflareContext<CfProperties, Context>> {
+export function getCloudflareContext(options: { async: true }): Promise<CloudflareContext>;
+export function getCloudflareContext(options?: { async: false }): CloudflareContext;
+export function getCloudflareContext(options: GetCloudflareContextOptions = { async: false }) {
 	return options.async ? getCloudflareContextAsync() : getCloudflareContextSync();
 }
 
 /**
  * Get the cloudflare context from the current global scope
  */
-function getCloudflareContextFromGlobalScope<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(): CloudflareContext<CfProperties, Context> | undefined {
-	const global = globalThis as InternalGlobalThis<CfProperties, Context>;
+function getCloudflareContextFromGlobalScope() {
+	const global = globalThis as InternalGlobalThis;
 	return global[cloudflareContextSymbol];
 }
 
 /**
  * Detects whether the current code is being evaluated in a statically generated route
  */
-function inSSG<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(): boolean {
-	const global = globalThis as InternalGlobalThis<CfProperties, Context>;
+function inSSG(): boolean {
+	const global = globalThis as InternalGlobalThis;
 	// Note: Next.js sets globalThis.__NEXT_DATA__.nextExport to true for SSG routes
 	// source: https://github.com/vercel/next.js/blob/4e394608423/packages/next/src/export/worker.ts#L55-L57)
 	return global.__NEXT_DATA__?.nextExport === true;
@@ -183,11 +160,8 @@ function inSSG<
 /**
  * Utility to get the current Cloudflare context in sync mode
  */
-function getCloudflareContextSync<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(): CloudflareContext<CfProperties, Context> {
-	const cloudflareContext = getCloudflareContextFromGlobalScope<CfProperties, Context>();
+function getCloudflareContextSync(): CloudflareContext {
+	const cloudflareContext = getCloudflareContextFromGlobalScope();
 
 	if (cloudflareContext) {
 		return cloudflareContext;
@@ -213,11 +187,8 @@ function getCloudflareContextSync<
 /**
  * Utility to get the current Cloudflare context in async mode
  */
-async function getCloudflareContextAsync<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(): Promise<CloudflareContext<CfProperties, Context>> {
-	const cloudflareContext = getCloudflareContextFromGlobalScope<CfProperties, Context>();
+async function getCloudflareContextAsync() {
+	const cloudflareContext = getCloudflareContextFromGlobalScope();
 
 	if (cloudflareContext) {
 		return cloudflareContext;
@@ -230,7 +201,7 @@ async function getCloudflareContextAsync<
 
 	if (inNodejsRuntime || inSSG()) {
 		// we're in a node.js process and also in "async mode" so we can use wrangler to asynchronously get the context
-		const cloudflareContext = await getCloudflareContextFromWrangler<CfProperties, Context>();
+		const cloudflareContext = await getCloudflareContextFromWrangler();
 		addCloudflareContextToNodejsGlobal(cloudflareContext);
 		return cloudflareContext;
 	}
@@ -285,11 +256,8 @@ function shouldContextInitializationRun(): boolean {
  *
  * @param cloudflareContext the cloudflare context to add to the node.sj global scope
  */
-function addCloudflareContextToNodejsGlobal<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(cloudflareContext: CloudflareContext<CfProperties, Context>) {
-	const global = globalThis as InternalGlobalThis<CfProperties, Context>;
+function addCloudflareContextToNodejsGlobal(cloudflareContext: CloudflareContext) {
+	const global = globalThis as InternalGlobalThis;
 	global[cloudflareContextSymbol] = cloudflareContext;
 }
 
@@ -303,7 +271,7 @@ function addCloudflareContextToNodejsGlobal<
  *
  * @param cloudflareContext the cloudflare context to patch onto the "edge" runtime context global scope
  */
-async function monkeyPatchVmModuleEdgeContext(cloudflareContext: CloudflareContext<CfProperties, Context>) {
+async function monkeyPatchVmModuleEdgeContext(cloudflareContext: CloudflareContext) {
 	const require = (
 		await import(/* webpackIgnore: true */ `${"__module".replaceAll("_", "")}`)
 	).default.createRequire(import.meta.url);
@@ -319,7 +287,7 @@ async function monkeyPatchVmModuleEdgeContext(cloudflareContext: CloudflareConte
 		options?: RunningCodeOptions | string
 	) => {
 		type RuntimeContext = Record<string, unknown> & {
-			[cloudflareContextSymbol]?: CloudflareContext<CfProperties, Context>;
+			[cloudflareContextSymbol]?: CloudflareContext;
 		};
 		const runtimeContext = contextifiedObject as RuntimeContext;
 		runtimeContext[cloudflareContextSymbol] ??= cloudflareContext;
@@ -327,22 +295,29 @@ async function monkeyPatchVmModuleEdgeContext(cloudflareContext: CloudflareConte
 	};
 }
 
+function isWranglerModule(
+	v: unknown
+): v is { getPlatformProxy: (typeof import("wrangler"))["getPlatformProxy"] } {
+	return typeof v === "object" && v !== null && "getPlatformProxy" in v;
+}
+
 /**
  * Gets a cloudflare context object from wrangler
  *
  * @returns the cloudflare context ready for use
  */
-async function getCloudflareContextFromWrangler<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(options?: GetPlatformProxyOptions): Promise<CloudflareContext<CfProperties, Context>> {
+async function getCloudflareContextFromWrangler(options?: GetPlatformProxyOptions) {
 	// Note: we never want wrangler to be bundled in the Next.js app, that's why the import below looks like it does
-	const { getPlatformProxy } = await import(/* webpackIgnore: true */ `${"__wrangler".replaceAll("_", "")}`);
+	const mod = await import(/* webpackIgnore: true */ `${"__wrangler".replaceAll("_", "")}`);
+	if (!isWranglerModule(mod)) {
+		throw new Error("Failed to load wrangler module");
+	}
+	const { getPlatformProxy } = mod;
 
 	// This allows the selection of a wrangler environment while running in next dev mode
 	const environment = options?.environment ?? process.env.NEXT_DEV_WRANGLER_ENV;
 
-	const { env, cf, ctx } = await getPlatformProxy({
+	const platformProxy = await getPlatformProxy({
 		...options,
 		// The `env` passed to the fetch handler does not contain variables from `.env*` files.
 		// because we invoke wrangler with `CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV`=`"false"`.
@@ -350,11 +325,8 @@ async function getCloudflareContextFromWrangler<
 		envFiles: [],
 		environment,
 	});
-	return {
-		env,
-		cf: cf as unknown as CfProperties,
-		ctx: ctx as Context,
-	};
+
+	return platformProxy;
 }
 
 // In production the cloudflare context is initialized by the worker so it is always available.
