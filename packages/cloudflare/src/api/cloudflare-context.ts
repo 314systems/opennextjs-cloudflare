@@ -199,14 +199,14 @@ async function getCloudflareContextAsync() {
 	// we are or not in a node.js process and that access to wrangler's node.js apis
 	const inNodejsRuntime = process.env.NEXT_RUNTIME === "nodejs";
 
-	if (inNodejsRuntime || inSSG()) {
-		// we're in a node.js process and also in "async mode" so we can use wrangler to asynchronously get the context
-		const cloudflareContext = await getCloudflareContextFromWrangler();
-		addCloudflareContextToNodejsGlobal(cloudflareContext);
-		return cloudflareContext;
+	if (!inNodejsRuntime && !inSSG()) {
+		throw new Error(initOpenNextCloudflareForDevErrorMsg);
 	}
 
-	throw new Error(initOpenNextCloudflareForDevErrorMsg);
+	// we're in a node.js process and also in "async mode" so we can use wrangler to asynchronously get the context
+	const newCloudflareContext = await getCloudflareContextFromWrangler();
+	addCloudflareContextToNodejsGlobal(newCloudflareContext);
+	return newCloudflareContext;
 }
 
 /**
