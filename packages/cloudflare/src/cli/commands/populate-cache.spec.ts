@@ -135,6 +135,13 @@ describe("populateCache", async () => {
 			await rm(buildOptions.outputDir, { recursive: true, force: true });
 		});
 
+		const createMockWorker = (dispose: () => void | Promise<void>) =>
+			({
+				ready: Promise.resolve(),
+				url: Promise.resolve(new URL("http://localhost:12345")),
+				dispose,
+			}) as unknown as Awaited<ReturnType<typeof unstable_startWorker>>;
+
 		test.for<PopulateCacheOptions>([
 			{ target: "local", shouldUsePreviewId: false },
 			{ target: "remote", shouldUsePreviewId: false },
@@ -150,12 +157,7 @@ describe("populateCache", async () => {
 
 				await setupMockFileSystem();
 				vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
-				// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
-				vi.mocked(unstable_startWorker).mockResolvedValueOnce({
-					ready: Promise.resolve(),
-					url: Promise.resolve(new URL("http://localhost:12345")),
-					dispose: mockWorkerDispose,
-				});
+				vi.mocked(unstable_startWorker).mockResolvedValueOnce(createMockWorker(mockWorkerDispose));
 				vi.mocked(ensureR2Bucket).mockResolvedValueOnce({ success: true, bucketName });
 
 				// Mock fetch to return a successful response for each individual entry.
@@ -237,12 +239,7 @@ describe("populateCache", async () => {
 			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 
 			const mockWorkerDispose = vi.fn();
-			// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
-			vi.mocked(unstable_startWorker).mockResolvedValueOnce({
-				ready: Promise.resolve(),
-				url: Promise.resolve(new URL("http://localhost:12345")),
-				dispose: mockWorkerDispose,
-			});
+			vi.mocked(unstable_startWorker).mockResolvedValueOnce(createMockWorker(mockWorkerDispose));
 			vi.spyOn(AbortSignal, "timeout");
 
 			const fetchMock = vi
@@ -293,12 +290,7 @@ describe("populateCache", async () => {
 			vi.spyOn(AbortSignal, "timeout");
 
 			const mockWorkerDispose = vi.fn();
-			// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
-			vi.mocked(unstable_startWorker).mockResolvedValueOnce({
-				ready: Promise.resolve(),
-				url: Promise.resolve(new URL("http://localhost:12345")),
-				dispose: mockWorkerDispose,
-			});
+			vi.mocked(unstable_startWorker).mockResolvedValueOnce(createMockWorker(mockWorkerDispose));
 
 			const fetchMock = vi
 				.spyOn(global, "fetch")
@@ -351,12 +343,7 @@ describe("populateCache", async () => {
 			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 
 			const mockWorkerDispose = vi.fn();
-			// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
-			vi.mocked(unstable_startWorker).mockResolvedValueOnce({
-				ready: Promise.resolve(),
-				url: Promise.resolve(new URL("http://localhost:12345")),
-				dispose: mockWorkerDispose,
-			});
+			vi.mocked(unstable_startWorker).mockResolvedValueOnce(createMockWorker(mockWorkerDispose));
 
 			const fetchMock = vi
 				.spyOn(global, "fetch")
@@ -408,12 +395,7 @@ describe("populateCache", async () => {
 			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 
 			const mockWorkerDispose = vi.fn();
-			// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
-			vi.mocked(unstable_startWorker).mockResolvedValueOnce({
-				ready: Promise.resolve(),
-				url: Promise.resolve(new URL("http://localhost:12345")),
-				dispose: mockWorkerDispose,
-			});
+			vi.mocked(unstable_startWorker).mockResolvedValueOnce(createMockWorker(mockWorkerDispose));
 
 			const fetchMock = vi.spyOn(global, "fetch").mockImplementation(async (_input, init) => {
 				if (init?.body instanceof ReadableStream) {
