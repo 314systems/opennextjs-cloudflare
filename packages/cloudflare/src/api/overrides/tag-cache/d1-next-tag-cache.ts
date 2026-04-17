@@ -175,7 +175,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 
 		if (!db) debugCache("No D1 database found");
 
-		const isDisabled = Boolean(globalThis.openNextConfig.dangerous?.disableTagCache);
+		const isDisabled = Boolean(globalThis.openNextConfig?.dangerous?.disableTagCache);
 
 		return !db || isDisabled
 			? { isDisabled: true as const }

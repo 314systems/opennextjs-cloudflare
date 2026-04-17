@@ -323,7 +323,7 @@ async function getCloudflareContextFromWrangler(options?: GetPlatformProxyOption
 		// because we invoke wrangler with `CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV`=`"false"`.
 		// Initializing `envFiles` with an empty list is the equivalent for this API call.
 		envFiles: [],
-		environment,
+		...(environment ? { environment } : {}),
 	});
 
 	return platformProxy;

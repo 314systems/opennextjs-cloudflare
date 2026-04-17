@@ -44,7 +44,7 @@ const createDurableObjectQueue = ({
 						() =>
 							res(
 								new Response(null, {
-									status: statusCode,
+									...(statusCode !== undefined ? { status: statusCode } : {}),
 									headers: headers ?? new Headers([["x-nextjs-cache", "REVALIDATED"]]),
 								})
 							),
@@ -54,7 +54,7 @@ const createDurableObjectQueue = ({
 			),
 			connect: vi.fn(),
 		},
-		NEXT_CACHE_DO_QUEUE_DISABLE_SQLITE: disableSQLite ? "true" : undefined,
+		...(disableSQLite ? { NEXT_CACHE_DO_QUEUE_DISABLE_SQLITE: "true" } : {}),
 	});
 };
 

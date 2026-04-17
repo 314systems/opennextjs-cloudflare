@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import shardedDOTagCache, { AVAILABLE_REGIONS, DOId } from "./do-sharded-tag-cache.js";

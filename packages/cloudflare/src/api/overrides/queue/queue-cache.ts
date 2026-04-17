@@ -104,6 +104,7 @@ class QueueCache implements Queue {
 		if (cachedResponse) {
 			return true;
 		}
+		return false;
 	}
 
 	/**

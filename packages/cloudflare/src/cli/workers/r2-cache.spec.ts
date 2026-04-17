@@ -39,7 +39,9 @@ describe("r2-cache worker", () => {
 				body: "v",
 			});
 
-			const response = await handler.fetch(request, { R2: undefined });
+			const response = await handler.fetch(request, {
+				/* no R2 binding */
+			});
 			expect(response.status).toBe(500);
 
 			const body = await response.json();
