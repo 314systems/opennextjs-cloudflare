@@ -25,6 +25,10 @@ describe("MemoryQueue", () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
 		vi.stubEnv("NEXT_PREVIEW_MODE_ID", "id");
+		mockServiceWorkerFetch.mockResolvedValue(
+			new Response(null, { headers: new Headers([["x-nextjs-cache", "REVALIDATED"]]) })
+		);
+		cache.revalidatedPaths.clear();
 		return () => {
 			vi.useRealTimers();
 			vi.unstubAllEnvs();

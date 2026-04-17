@@ -68,6 +68,7 @@ describe("DOShardedTagCache class", () => {
 		});
 
 		it("should return empty object on SQL error", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const cache = createDOShardedTagCache();
 			vi.mocked(cache.sql.exec).mockImplementationOnce(() => {
 				throw new Error("sql error");
