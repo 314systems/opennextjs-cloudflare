@@ -151,10 +151,10 @@ export async function ensureR2Bucket(
 
 		// Check if bucket already exists
 		try {
+			// @ts-expect-error The SDK types are currently inaccurate and don't include the jurisdiction parameter, but the API does support it for bucket retrieval and it is required for buckets in certain jurisdictions
 			await client.r2.buckets.get(bucketName, {
 				account_id: accountId,
-				// @ts-expect-error Let the API handle validation and potential errors for unsupported jurisdictions
-				jurisdiction,
+				...(jurisdiction ? { jurisdiction } : {}),
 			});
 			// Bucket exists
 			return { success: true, bucketName };
