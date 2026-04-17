@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import handler from "./r2-cache.ts";
-import { ERR_BINDING_NOT_FOUND, ERR_INVALID_REQUEST, ERR_WRITE_FAILED } from "./r2-cache-types.ts";
+import handler from "./r2-cache.js";
+import { ERR_BINDING_NOT_FOUND, ERR_INVALID_REQUEST, ERR_WRITE_FAILED } from "./r2-cache-types.js";
 
 const mockPut = vi.fn();
 const mockR2Bucket = { put: mockPut } as unknown as R2Bucket;
