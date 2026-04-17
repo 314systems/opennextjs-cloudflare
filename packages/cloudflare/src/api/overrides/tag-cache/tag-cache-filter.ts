@@ -37,7 +37,7 @@ export function withFilter({ tagCache, filterFn }: WithFilterOptions): NextModeT
 					}
 					return tagCache.getPathsByTags!(filteredTags);
 				}
-			: undefined,
+			: () => Promise.resolve([]),
 		hasBeenRevalidated: async (tags, lastModified) => {
 			const filteredTags = tags.filter(filterFn);
 			if (filteredTags.length === 0) {
@@ -60,7 +60,7 @@ export function withFilter({ tagCache, filterFn }: WithFilterOptions): NextModeT
 					}
 					return tagCache.isStale!(filteredTags, lastModified);
 				}
-			: undefined,
+			: () => Promise.resolve(false),
 	};
 }
 
