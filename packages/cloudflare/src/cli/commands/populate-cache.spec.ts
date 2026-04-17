@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 
 import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
+import logger from "@opennextjs/aws/logger.js";
 import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import type { Unstable_Config as WranglerConfig } from "wrangler";
 import { unstable_startWorker } from "wrangler";
@@ -92,6 +93,16 @@ vi.mock("./utils/run-wrangler.js", () => ({
 vi.mock("./utils/helpers.js", () => ({
 	getEnvFromPlatformProxy: vi.fn(async () => ({})),
 	quoteShellMeta: vi.fn((s) => s),
+}));
+
+vi.mock("@opennextjs/aws/logger.js", () => ({
+	default: {
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		debug: vi.fn(),
+		setLevel: vi.fn(),
+	},
 }));
 
 vi.mock("../utils/ensure-r2-bucket.js");
@@ -281,6 +292,10 @@ describe("populateCache", async () => {
 			await result;
 
 			expect(fetchMock).toHaveBeenCalledTimes(2);
+			expect(logger.error).not.toHaveBeenCalled();
+			expect(logger.debug).toHaveBeenCalledWith(
+				expect.stringContaining('Attempt 1 to write "incremental-cache/buildID/')
+			);
 			expect(mockWorkerDispose).toHaveBeenCalled();
 		});
 
@@ -335,6 +350,10 @@ describe("populateCache", async () => {
 
 			expect(fetchMock).toHaveBeenCalledTimes(2);
 			expect(AbortSignal.timeout).toHaveBeenCalledWith(60_000);
+			expect(logger.error).not.toHaveBeenCalled();
+			expect(logger.debug).toHaveBeenCalledWith(
+				expect.stringContaining("failed with a retryable error: R2 storage error. Retrying...")
+			);
 			expect(mockWorkerDispose).toHaveBeenCalled();
 		});
 
@@ -387,6 +406,10 @@ describe("populateCache", async () => {
 			await expect(result).resolves.toBeUndefined();
 
 			expect(fetchMock).toHaveBeenCalledTimes(2);
+			expect(logger.error).not.toHaveBeenCalled();
+			expect(logger.debug).toHaveBeenCalledWith(
+				expect.stringContaining("failed with a retryable error: Worker exceeded resource limits. Retrying...")
+			);
 			expect(mockWorkerDispose).toHaveBeenCalled();
 		});
 
@@ -439,6 +462,8 @@ describe("populateCache", async () => {
 			);
 
 			expect(fetchMock).toHaveBeenCalledTimes(5);
+			expect(logger.error).not.toHaveBeenCalled();
+			expect(logger.debug).toHaveBeenCalledTimes(4);
 			expect(mockWorkerDispose).toHaveBeenCalled();
 		});
 	});

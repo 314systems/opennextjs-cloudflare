@@ -465,7 +465,7 @@ async function sendEntryToR2Worker(options: {
 			return;
 		} catch (e) {
 			if (e instanceof RetryableWorkerError && attempt < CLIENT_RETRY_ATTEMPTS - 1) {
-				logger.error(
+				logger.debug(
 					`Attempt ${attempt + 1} to write "${key}" failed with a retryable error: ${e.message}. Retrying...`
 				);
 				await setTimeout(CLIENT_RETRY_BASE_DELAY_MS * Math.pow(2, attempt));

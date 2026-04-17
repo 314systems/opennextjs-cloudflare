@@ -122,6 +122,7 @@ describe("DurableObjectQueue", () => {
 
 	describe("failed revalidation", () => {
 		it("should not put it in failed state for an incorrect 200", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const queue = createDurableObjectQueue({
 				fetchDuration: 10,
 				statusCode: 200,
@@ -172,6 +173,7 @@ describe("DurableObjectQueue", () => {
 		});
 
 		it("should put it in failed state if revalidation fetch throw", async () => {
+			vi.spyOn(console, "error").mockImplementation(() => {});
 			const queue = createDurableObjectQueue({
 				fetchDuration: 10,
 			});
