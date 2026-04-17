@@ -1,21 +1,44 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"extends": "@tsconfig/strictest/tsconfig.json",
 	"compilerOptions": {
-		"declaration": true,
-		"esModuleInterop": true,
-		"exactOptionalPropertyTypes": false,
-		"forceConsistentCasingInFileNames": true,
-		"lib": ["ESNext"],
-		"module": "ESNext",
-		"moduleResolution": "node",
-		"noImplicitReturns": false,
-		"noPropertyAccessFromIndexSignature": false,
-		"resolveJsonModule": true,
+		// File Layout
+		"rootDir": "./src",
 		"outDir": "./dist",
-		"target": "ES2022",
-		"types": ["@cloudflare/workers-types", "@opennextjs/aws/types/global.d.ts"]
+
+		// Environment Settings
+		"module": "nodenext",
+		"target": "esnext",
+		"lib": ["esnext"],
+		"types": ["@cloudflare/workers-types", "@opennextjs/aws/types/global.d.ts", "node"],
+
+		// Other Outputs
+		"sourceMap": true,
+		"declaration": true,
+		"declarationMap": true,
+
+		// Stricter Typechecking Options
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+
+		// Style Options
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		// "noFallthroughCasesInSwitch": true,
+		"noPropertyAccessFromIndexSignature": false,
+
+		// Recommended Options
+		"strict": true,
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"noUncheckedSideEffectImports": true,
+		"moduleDetection": "force",
+		"skipLibCheck": true,
+
+		"resolveJsonModule": true,
+		"isolatedDeclarations": true,
+		"checkJs": false
 	},
 	"include": ["src/**/*.ts", "env.d.ts"],
-	"exclude": ["src/**/*.spec.ts"]
+	"exclude": ["node_modules", "dist"]
 }
