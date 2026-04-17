@@ -22,5 +22,7 @@ export default defineConfig({
 		coverage: {
 			provider: "v8",
 		},
+		include: ["**/*.spec.ts"],
+		exclude: ["node_modules", "dist"],
 	},
 });
