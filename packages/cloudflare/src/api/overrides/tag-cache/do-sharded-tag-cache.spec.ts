@@ -6,7 +6,6 @@ import shardedDOTagCache, { AVAILABLE_REGIONS, DOId } from "./do-sharded-tag-cac
 
 declare global {
 	var continent: string | undefined;
-	var openNextConfig: { dangerous?: { disableTagCache?: boolean } } | undefined;
 }
 
 const hasBeenRevalidatedMock = vi.fn();

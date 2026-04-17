@@ -9,7 +9,7 @@ import type { TagData } from "../../durable-objects/sharded-tag-cache.js";
 import { DOShardedTagCache } from "../../durable-objects/sharded-tag-cache.js";
 import { debugCache, isPurgeCacheEnabled, purgeCacheByTags } from "../internal.js";
 
-type NormalizedTagInput = { tag: string; stale?: number; expire?: number | null };
+type NormalizedTagInput = { tag: string; stale?: number; expire: number | null };
 type CachedTagValue = { tag: string } & TagData;
 
 export const DEFAULT_WRITE_RETRIES = 3;
@@ -217,8 +217,8 @@ class ShardedDOTagCache implements NextModeTagCache {
 
 		const normalized: NormalizedTagInput[] = tags.map((tag) =>
 			typeof tag === "string"
-				? { tag, stale: nowMs, expire: undefined }
-				: { tag: tag.tag, stale: tag.stale ?? nowMs, expire: tag.expire }
+				? { tag, stale: nowMs, expire: null }
+				: { tag: tag.tag, stale: tag.stale ?? nowMs, expire: tag.expire ?? null }
 		);
 
 		const tagStrings = normalized.map((t) => t.tag);
@@ -509,7 +509,11 @@ class ShardedDOTagCache implements NextModeTagCache {
 			key: doId.key,
 			region: doId.region,
 		});
-		return durableObject.get(id, { locationHint: doId.region });
+		if (doId.region !== undefined) {
+			return durableObject.get(id, { locationHint: doId.region });
+		} else {
+			return durableObject.get(id);
+		}
 	}
 
 	/**
@@ -546,7 +550,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 							baseShardId: generateShardId(tag, this.opts.baseShardSize, "shard"),
 							numberOfReplicas: numReplicas,
 							shardType,
-							replicaId,
+							...(replicaId !== undefined ? { replicaId } : {}),
 						}),
 						tag,
 					};
@@ -563,7 +567,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 								baseShardId: doId.options.baseShardId,
 								numberOfReplicas: numReplicas,
 								shardType,
-								replicaId: doId.replicaId,
+								...(doId.replicaId !== undefined ? { replicaId: doId.replicaId } : {}),
 								region,
 							}),
 							tag,
@@ -619,7 +623,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 export class DOId {
 	shardId: string;
 	replicaId: number;
-	region?: DurableObjectLocationHint;
+	region: DurableObjectLocationHint | undefined;
 	constructor(public options: DOIdOptions) {
 		const { baseShardId, shardType, numberOfReplicas, replicaId, region } = options;
 		this.shardId = `tag-${shardType};${baseShardId}`;

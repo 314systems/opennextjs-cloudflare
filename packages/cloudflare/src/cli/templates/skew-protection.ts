@@ -70,6 +70,7 @@ export function maybeGetSkewProtectionResponse(request: Request): Promise<Respon
 
 		return fetch(requestToOlderDeployment, { headers });
 	}
+	return undefined;
 }
 
 declare global {

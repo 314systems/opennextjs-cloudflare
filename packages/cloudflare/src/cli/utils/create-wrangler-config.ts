@@ -98,6 +98,7 @@ async function getNameFromPackageJson(sourceDir: string): Promise<string | undef
 	} catch {
 		/* empty */
 	}
+	return undefined;
 }
 
 /**
@@ -110,7 +111,7 @@ async function getNameFromPackageJson(sourceDir: string): Promise<string | undef
  */
 async function getLatestCompatDate(): Promise<string | undefined> {
 	try {
-		const resp = await fetch(`https://registry.npmjs.org/workerd`);
+		const resp = await fetch("https://registry.npmjs.org/workerd");
 		const latestWorkerdVersion = (
 			(await resp.json()) as {
 				"dist-tags": { latest: string };
@@ -131,4 +132,5 @@ async function getLatestCompatDate(): Promise<string | undefined> {
 	} catch {
 		/* empty */
 	}
+	return undefined;
 }

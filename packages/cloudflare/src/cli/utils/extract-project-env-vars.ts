@@ -8,6 +8,7 @@ function readEnvFile(filePath: string) {
 	if (existsSync(filePath) && statSync(filePath).isFile()) {
 		return parse(readFileSync(filePath, "utf-8"));
 	}
+	return undefined;
 }
 
 /**
