@@ -88,7 +88,6 @@ export async function copyWorkerdPackages(
 	// Copy full external packages when they use "workerd" build condition
 	const nextConfig = loadConfig(path.join(options.appBuildOutputPath, ".next"));
 	const externalPackages =
-		// @ts-expect-error In Next 14 its under experimental.serverComponentsExternalPackages
 		nextConfig.serverExternalPackages ?? nextConfig.experimental.serverComponentsExternalPackages ?? [];
 	for (const [src, dst] of nodePackages.entries()) {
 		try {
