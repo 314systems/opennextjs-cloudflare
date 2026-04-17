@@ -5,8 +5,7 @@ import { IgnorableError } from "@opennextjs/aws/utils/error.js";
 
 import { getCloudflareContext } from "../../cloudflare-context.js";
 import type { OpenNextConfig } from "../../config.js";
-import type { TagData } from "../../durable-objects/sharded-tag-cache.js";
-import { DOShardedTagCache } from "../../durable-objects/sharded-tag-cache.js";
+import type { DOShardedTagCache, TagData } from "../../durable-objects/sharded-tag-cache.js";
 import { debugCache, isPurgeCacheEnabled, purgeCacheByTags } from "../internal.js";
 
 type NormalizedTagInput = { tag: string; stale?: number; expire: number | null };

@@ -369,7 +369,7 @@ describe("DOShardedTagCache", () => {
 			await cache.writeTags(["tag1"]);
 			expect(idFromNameMock).toHaveBeenCalled();
 			expect(writeTagsMock).toHaveBeenCalled();
-			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag1", stale: 1000, expire: undefined }]);
+			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag1", stale: 1000, expire: null }]);
 		});
 
 		it("should write the tags to the cache for multiple shards", async () => {
@@ -377,8 +377,8 @@ describe("DOShardedTagCache", () => {
 			await cache.writeTags(["tag1", "tag2"]);
 			expect(idFromNameMock).toHaveBeenCalledTimes(2);
 			expect(writeTagsMock).toHaveBeenCalledTimes(2);
-			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag1", stale: 1000, expire: undefined }]);
-			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag2", stale: 1000, expire: undefined }]);
+			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag1", stale: 1000, expire: null }]);
+			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag2", stale: 1000, expire: null }]);
 		});
 
 		it("should write object tags with stale and expire", async () => {
@@ -395,8 +395,8 @@ describe("DOShardedTagCache", () => {
 			await cache.writeTags(["tag1", "_N_T_/tag1"]);
 			expect(idFromNameMock).toHaveBeenCalledTimes(6);
 			expect(writeTagsMock).toHaveBeenCalledTimes(6);
-			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag1", stale: 1000, expire: undefined }]);
-			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "_N_T_/tag1", stale: 1000, expire: undefined }]);
+			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "tag1", stale: 1000, expire: null }]);
+			expect(writeTagsMock).toHaveBeenCalledWith([{ tag: "_N_T_/tag1", stale: 1000, expire: null }]);
 		});
 
 		it("should call deleteRegionalCache", async () => {

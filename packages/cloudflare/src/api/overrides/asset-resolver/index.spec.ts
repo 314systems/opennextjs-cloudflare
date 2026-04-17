@@ -70,7 +70,7 @@ describe("maybeGetAssetResult", () => {
 	});
 
 	it("returns undefined when run_worker_first is false", async () => {
-		globalThis.__ASSETS_RUN_WORKER_FIRST__ = false;
+		__ASSETS_RUN_WORKER_FIRST__ = false;
 
 		const result = await callResolver("GET", "/style.css");
 

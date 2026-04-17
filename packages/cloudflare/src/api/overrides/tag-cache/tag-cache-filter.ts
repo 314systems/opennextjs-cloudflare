@@ -19,7 +19,7 @@ interface WithFilterOptions {
  * This is useful to remove tags that are not used by the app, this could reduce the number of requests to the underlying tag cache.
  */
 export function withFilter({ tagCache, filterFn }: WithFilterOptions): NextModeTagCache {
-	return {
+	const filteredTagCache: NextModeTagCache = {
 		name: `filtered-${tagCache.name}`,
 		mode: "nextMode",
 		getLastRevalidated: async (tags) => {
@@ -29,15 +29,6 @@ export function withFilter({ tagCache, filterFn }: WithFilterOptions): NextModeT
 			}
 			return tagCache.getLastRevalidated(filteredTags);
 		},
-		getPathsByTags: tagCache.getPathsByTags
-			? async (tags) => {
-					const filteredTags = tags.filter(filterFn);
-					if (filteredTags.length === 0) {
-						return [];
-					}
-					return tagCache.getPathsByTags!(filteredTags);
-				}
-			: () => Promise.resolve([]),
 		hasBeenRevalidated: async (tags, lastModified) => {
 			const filteredTags = tags.filter(filterFn);
 			if (filteredTags.length === 0) {
@@ -52,16 +43,29 @@ export function withFilter({ tagCache, filterFn }: WithFilterOptions): NextModeT
 			}
 			return tagCache.writeTags(filteredTags);
 		},
-		isStale: tagCache.isStale
-			? async (tags, lastModified) => {
-					const filteredTags = tags.filter(filterFn);
-					if (filteredTags.length === 0) {
-						return false;
-					}
-					return tagCache.isStale!(filteredTags, lastModified);
-				}
-			: () => Promise.resolve(false),
 	};
+
+	if (tagCache.getPathsByTags) {
+		filteredTagCache.getPathsByTags = async (tags) => {
+			const filteredTags = tags.filter(filterFn);
+			if (filteredTags.length === 0) {
+				return [];
+			}
+			return tagCache.getPathsByTags!(filteredTags);
+		};
+	}
+
+	if (tagCache.isStale) {
+		filteredTagCache.isStale = async (tags, lastModified) => {
+			const filteredTags = tags.filter(filterFn);
+			if (filteredTags.length === 0) {
+				return false;
+			}
+			return tagCache.isStale!(filteredTags, lastModified);
+		};
+	}
+
+	return filteredTagCache;
 }
 
 /**

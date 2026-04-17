@@ -206,7 +206,7 @@ export class KVNextModeTagCache implements NextModeTagCache {
 			return undefined;
 		}
 
-		const isDisabled = Boolean(globalThis.openNextConfig.dangerous?.disableTagCache);
+		const isDisabled = Boolean(openNextConfig.dangerous?.disableTagCache);
 
 		return isDisabled ? undefined : kv;
 	}
