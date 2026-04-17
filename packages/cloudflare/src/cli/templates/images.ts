@@ -296,16 +296,30 @@ async function readImageHeader(
 	// Note: imageResponse.body is non-null — callers check before calling.
 	const [contentTypeStream, imageStream] = imageResponse.body!.tee();
 	const headerBytes = new Uint8Array(32);
-	const reader = contentTypeStream.getReader({ mode: "byob" });
-	const readResult = await reader.readAtLeast(32, headerBytes);
-	if (readResult.value === undefined) {
-		await imageResponse.body!.cancel();
+	let bytesRead = 0;
+	const reader = contentTypeStream.getReader();
+
+	while (bytesRead < headerBytes.byteLength) {
+		const { done, value } = await reader.read();
+		if (done) {
+			break;
+		}
+
+		const availableBytes = Math.min(value.byteLength, headerBytes.byteLength - bytesRead);
+		headerBytes.set(value.subarray(0, availableBytes), bytesRead);
+		bytesRead += availableBytes;
+	}
+
+	await reader.cancel();
+
+	if (bytesRead === 0) {
+		await imageStream.cancel();
 		return new Response('"url" parameter is valid but upstream response is invalid', {
 			status: 400,
 		});
 	}
 
-	const contentType = detectImageContentType(readResult.value);
+	const contentType = detectImageContentType(headerBytes.subarray(0, bytesRead));
 	return { contentType, imageStream };
 }
 

@@ -1,3 +1,5 @@
+import { fetch, Headers, Request, Response, URL } from "@cloudflare/workers-types/experimental/index.js";
+
 /** Name of the env var containing the mapping */
 export const DEPLOYMENT_MAPPING_ENV_NAME = "CF_DEPLOYMENT_MAPPING";
 /** Version used for the latest worker */
@@ -60,13 +62,19 @@ export async function maybeGetSkewProtectionResponse(request: Request): Promise<
 		const versionDomain = version.split("-")[0];
 		const hostname = `${versionDomain}-${process.env.CF_WORKER_NAME}.${process.env.CF_PREVIEW_DOMAIN}.workers.dev`;
 		url.hostname = hostname;
-		const requestToOlderDeployment = new Request(url!, request);
 
 		// Remove the origin header to prevent an error with POST requests
 		const headers = new Headers(request.headers);
 		headers.delete("origin");
 
-		const response = await fetch(requestToOlderDeployment, { headers });
+		const response = await fetch(url, {
+			body: request.body,
+			headers,
+			method: request.method,
+			redirect: request.redirect,
+			signal: request.signal,
+		});
+
 		return response;
 	}
 	return undefined;

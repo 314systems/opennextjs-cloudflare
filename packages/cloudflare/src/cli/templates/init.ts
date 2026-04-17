@@ -3,10 +3,18 @@
  *
  * The file must be imported at the top level the worker.
  */
-
 import { AsyncLocalStorage } from "node:async_hooks";
 import process from "node:process";
 import stream from "node:stream";
+
+import {
+	type ExecutionContext,
+	Request,
+	type RequestInfo,
+	type RequestInit,
+	Response,
+	URL,
+} from "@cloudflare/workers-types/experimental/index.js";
 
 // @ts-expect-error: resolved by wrangler build
 import * as nextEnvVars from "./next-env.mjs";
@@ -77,7 +85,7 @@ function initRuntime() {
 		return __original_fetch(input, init);
 	};
 
-	const CustomRequest = class extends globalThis.Request {
+	const CustomRequest = class extends Request {
 		constructor(input: RequestInfo | URL, init?: RequestInit) {
 			if (init) {
 				delete (init as { cache: unknown }).cache;

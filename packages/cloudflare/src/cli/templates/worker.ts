@@ -1,3 +1,8 @@
+import {
+	type ExportedHandler,
+	Response,
+} from "@cloudflare/workers-types/experimental/index.js";
+
 import { handleCdnCgiImageRequest, handleImageRequest } from "./cloudflare/images.js";
 import { runWithCloudflareRequestContext } from "./cloudflare/init.js";
 import { maybeGetSkewProtectionResponse } from "./cloudflare/skew-protection.js";
@@ -9,7 +14,7 @@ export { DOQueueHandler } from "./.build/durable-objects/queue.js";
 export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js";
 
 const worker: ExportedHandler<CloudflareEnv> = {
-	async fetch(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
+	async fetch(request, env, ctx) {
 		return runWithCloudflareRequestContext(request, env, ctx, async () => {
 			const response = await maybeGetSkewProtectionResponse(request);
 
