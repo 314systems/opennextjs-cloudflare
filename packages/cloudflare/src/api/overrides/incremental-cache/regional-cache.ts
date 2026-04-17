@@ -1,5 +1,5 @@
 import { error } from "@opennextjs/aws/adapters/logger.js";
-import {
+import type {
 	CacheEntryType,
 	CacheValue,
 	IncrementalCache,
@@ -7,7 +7,12 @@ import {
 } from "@opennextjs/aws/types/overrides.js";
 
 import { getCloudflareContext } from "../../cloudflare-context.js";
-import { debugCache, FALLBACK_BUILD_ID, IncrementalCacheEntry, isPurgeCacheEnabled } from "../internal.js";
+import {
+	debugCache,
+	FALLBACK_BUILD_ID,
+	type IncrementalCacheEntry,
+	isPurgeCacheEnabled,
+} from "../internal.js";
 
 const ONE_MINUTE_IN_SECONDS = 60;
 const THIRTY_MINUTES_IN_SECONDS = ONE_MINUTE_IN_SECONDS * 30;

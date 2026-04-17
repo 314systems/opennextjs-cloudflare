@@ -1,9 +1,9 @@
 import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
-import {
+import type {
 	BaseOverride,
 	LazyLoadedOverride,
 	OpenNextConfig as AwsOpenNextConfig,
-	type RoutePreloadingBehavior,
+	RoutePreloadingBehavior,
 } from "@opennextjs/aws/types/open-next.js";
 import type {
 	CDNInvalidationHandler,

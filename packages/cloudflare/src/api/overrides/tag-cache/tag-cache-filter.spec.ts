@@ -1,4 +1,4 @@
-import { NextModeTagCache, NextModeTagCacheWriteInput } from "@opennextjs/aws/types/overrides.js";
+import type { NextModeTagCache, NextModeTagCacheWriteInput } from "@opennextjs/aws/types/overrides.js";
 import { describe, expect, it, vi } from "vitest";
 
 import { softTagFilter, withFilter } from "./tag-cache-filter.js";

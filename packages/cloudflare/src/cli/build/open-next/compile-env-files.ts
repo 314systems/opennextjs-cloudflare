@@ -1,7 +1,7 @@
 import { appendFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 
-import { BuildOptions } from "@opennextjs/aws/build/helper.js";
+import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
 
 import { extractProjectEnvVars } from "../../utils/extract-project-env-vars.js";
 

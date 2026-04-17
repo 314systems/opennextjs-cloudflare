@@ -1,6 +1,6 @@
 import { appendFile, writeFile } from "node:fs/promises";
 
-import { BuildOptions } from "@opennextjs/aws/build/helper.js";
+import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
 import mockFs from "mock-fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 

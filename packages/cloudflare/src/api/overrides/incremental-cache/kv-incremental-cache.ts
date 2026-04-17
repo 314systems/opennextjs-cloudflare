@@ -8,7 +8,7 @@ import type {
 import { IgnorableError } from "@opennextjs/aws/utils/error.js";
 
 import { getCloudflareContext } from "../../cloudflare-context.js";
-import { computeCacheKey, debugCache, IncrementalCacheEntry } from "../internal.js";
+import { computeCacheKey, debugCache, type IncrementalCacheEntry } from "../internal.js";
 
 export const NAME = "cf-kv-incremental-cache";
 

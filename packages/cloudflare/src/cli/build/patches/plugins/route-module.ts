@@ -8,7 +8,7 @@
 
 import path from "node:path";
 
-import { BuildOptions, getPackagePath } from "@opennextjs/aws/build/helper.js";
+import { type BuildOptions, getPackagePath } from "@opennextjs/aws/build/helper.js";
 import { patchCode } from "@opennextjs/aws/build/patch/astCodePatcher.js";
 import type { ContentUpdater, Plugin } from "@opennextjs/aws/plugins/content-updater.js";
 import { getCrossPlatformPathRegex } from "@opennextjs/aws/utils/regex.js";

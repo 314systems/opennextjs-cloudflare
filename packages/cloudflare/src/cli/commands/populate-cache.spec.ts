@@ -10,8 +10,8 @@ import { unstable_startWorker } from "wrangler";
 import { defineCloudflareConfig } from "../../api/config.js";
 import r2IncrementalCache from "../../api/overrides/incremental-cache/r2-incremental-cache.js";
 import { ensureR2Bucket } from "../utils/ensure-r2-bucket.js";
-import { getCacheAssets, populateCache, PopulateCacheOptions } from "./populate-cache.js";
-import { WorkerEnvVar } from "./utils/helpers.js";
+import { getCacheAssets, populateCache, type PopulateCacheOptions } from "./populate-cache.js";
+import type { WorkerEnvVar } from "./utils/helpers.js";
 
 describe("getCacheAssets", () => {
 	let testDir: string;

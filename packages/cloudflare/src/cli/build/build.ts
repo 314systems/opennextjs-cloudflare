@@ -8,7 +8,7 @@ import { printHeader } from "@opennextjs/aws/build/utils.js";
 import logger from "@opennextjs/aws/logger.js";
 import type { Unstable_Config } from "wrangler";
 
-import { OpenNextConfig } from "../../api/config.js";
+import type { OpenNextConfig } from "../../api/config.js";
 import type { ProjectOptions } from "../project-options.js";
 import { ensureNextjsVersionSupported } from "../utils/nextjs-support.js";
 import { bundleServer } from "./bundle-server.js";

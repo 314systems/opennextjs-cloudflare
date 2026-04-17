@@ -1,4 +1,4 @@
-import { applyRule, SgNode } from "@opennextjs/aws/build/patch/astCodePatcher.js";
+import { applyRule, type SgNode } from "@opennextjs/aws/build/patch/astCodePatcher.js";
 
 export const vercelOgImportRule = `
 rule:
