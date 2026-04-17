@@ -1,5 +1,5 @@
 import type { InternalResult } from "@opennextjs/aws/types/open-next.js";
-import { beforeEach, describe, expect, it, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { isUserWorkerFirst } from "./index.js";
 
@@ -33,7 +33,7 @@ describe("maybeGetAssetResult", () => {
 	const callResolver = (method: string, rawPath: string): Promise<InternalResult | undefined> =>
 		Promise.resolve(resolver.maybeGetAssetResult!(makeEvent(method, rawPath)));
 
-	test("GET request returns response body", async () => {
+	it("returns a 200 response with body for GET requests", async () => {
 		const body = new ReadableStream();
 		mockAssetsFetch.mockResolvedValue(new Response(body, { status: 200 }));
 
@@ -44,7 +44,7 @@ describe("maybeGetAssetResult", () => {
 		expect(result!.body).not.toBeNull();
 	});
 
-	test("HEAD request returns null body", async () => {
+	it("returns a 200 response with null body for HEAD requests", async () => {
 		mockAssetsFetch.mockResolvedValue(new Response(null, { status: 200 }));
 
 		const result = await callResolver("HEAD", "/style.css");
@@ -80,45 +80,43 @@ describe("maybeGetAssetResult", () => {
 });
 
 describe("isUserWorkerFirst", () => {
-	test("run_worker_first = false", () => {
+	it("returns false when run_worker_first is false", () => {
 		expect(isUserWorkerFirst(false, "/test")).toBe(false);
 		expect(isUserWorkerFirst(false, "/")).toBe(false);
 	});
 
-	test("run_worker_first is undefined", () => {
+	it("returns false when run_worker_first is undefined", () => {
 		expect(isUserWorkerFirst(undefined, "/test")).toBe(false);
 		expect(isUserWorkerFirst(undefined, "/")).toBe(false);
 	});
 
-	test("run_worker_first = true", () => {
+	it("returns true when run_worker_first is true", () => {
 		expect(isUserWorkerFirst(true, "/test")).toBe(true);
 		expect(isUserWorkerFirst(true, "/")).toBe(true);
 	});
 
-	describe("run_worker_first is an array", () => {
-		test("positive string match", () => {
-			expect(isUserWorkerFirst(["/test.ext"], "/test.ext")).toBe(true);
-			expect(isUserWorkerFirst(["/a", "/b", "/test.ext"], "/test.ext")).toBe(true);
-			expect(isUserWorkerFirst(["/a", "/b", "/test.ext"], "/test")).toBe(false);
-			expect(isUserWorkerFirst(["/before/test.ext"], "/test.ext")).toBe(false);
-			expect(isUserWorkerFirst(["/test.ext/after"], "/test.ext")).toBe(false);
-		});
+	it("returns true when path exactly matches a rule in the array", () => {
+		expect(isUserWorkerFirst(["/test.ext"], "/test.ext")).toBe(true);
+		expect(isUserWorkerFirst(["/a", "/b", "/test.ext"], "/test.ext")).toBe(true);
+		expect(isUserWorkerFirst(["/a", "/b", "/test.ext"], "/test")).toBe(false);
+		expect(isUserWorkerFirst(["/before/test.ext"], "/test.ext")).toBe(false);
+		expect(isUserWorkerFirst(["/test.ext/after"], "/test.ext")).toBe(false);
+	});
 
-		test("negative string match", () => {
-			expect(isUserWorkerFirst(["!/test.ext"], "/test.ext")).toBe(false);
-			expect(isUserWorkerFirst(["!/a", "!/b", "!/test.ext"], "/test.ext")).toBe(false);
-		});
+	it("returns false when path matches a negative rule in the array", () => {
+		expect(isUserWorkerFirst(["!/test.ext"], "/test.ext")).toBe(false);
+		expect(isUserWorkerFirst(["!/a", "!/b", "!/test.ext"], "/test.ext")).toBe(false);
+	});
 
-		test("positive patterns", () => {
-			expect(isUserWorkerFirst(["/images/*"], "/images/pic.jpg")).toBe(true);
-			expect(isUserWorkerFirst(["/images/*"], "/other/pic.jpg")).toBe(false);
-		});
+	it("returns true when path matches a wildcard pattern in the array", () => {
+		expect(isUserWorkerFirst(["/images/*"], "/images/pic.jpg")).toBe(true);
+		expect(isUserWorkerFirst(["/images/*"], "/other/pic.jpg")).toBe(false);
+	});
 
-		test("negative patterns", () => {
-			expect(isUserWorkerFirst(["/*", "!/images/*"], "/images/pic.jpg")).toBe(false);
-			expect(isUserWorkerFirst(["/*", "!/images/*"], "/index.html")).toBe(true);
-			expect(isUserWorkerFirst(["!/images/*", "/*"], "/images/pic.jpg")).toBe(false);
-			expect(isUserWorkerFirst(["!/images/*", "/*"], "/index.html")).toBe(true);
-		});
+	it("returns false when a negative rule overrides a positive wildcard match in the array", () => {
+		expect(isUserWorkerFirst(["/*", "!/images/*"], "/images/pic.jpg")).toBe(false);
+		expect(isUserWorkerFirst(["/*", "!/images/*"], "/index.html")).toBe(true);
+		expect(isUserWorkerFirst(["!/images/*", "/*"], "/images/pic.jpg")).toBe(false);
+		expect(isUserWorkerFirst(["!/images/*", "/*"], "/index.html")).toBe(true);
 	});
 });
