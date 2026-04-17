@@ -96,13 +96,16 @@ export async function getDeploymentMapping(
 	const client = new Cloudflare({ apiToken });
 	const scriptName = envVars.CF_WORKER_NAME!;
 
+	const maxVersionAgeDays = config.cloudflare?.skewProtection?.maxVersionAgeDays;
 	const deployedVersions = await listWorkerVersions(scriptName, {
 		client,
 		accountId,
-		maxNumberOfVersions: config.cloudflare?.skewProtection?.maxNumberOfVersions,
-		afterTimeMs: config.cloudflare?.skewProtection?.maxVersionAgeDays
-			? Date.now() - config.cloudflare?.skewProtection?.maxVersionAgeDays * MS_PER_DAY
-			: undefined,
+		...(config.cloudflare?.skewProtection?.maxNumberOfVersions !== undefined
+			? { maxNumberOfVersions: config.cloudflare.skewProtection.maxNumberOfVersions }
+			: {}),
+		...(maxVersionAgeDays !== undefined
+			? { afterTimeMs: Date.now() - maxVersionAgeDays * MS_PER_DAY }
+			: {}),
 	});
 
 	const existingMapping =

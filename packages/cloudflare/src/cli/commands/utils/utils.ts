@@ -235,17 +235,18 @@ export function withWranglerPassthroughArgs<T extends ArgumentsCamelCase<Record<
 	const config = asString(args.config);
 	const env = asString(args.env);
 	const remote = asBoolean(args.remote);
+	const wranglerExtraArgs = asStringOrNumberArray(args.args);
 
 	return {
 		...args,
 		env,
 		wranglerConfigPath: config ?? configPath,
 		wranglerArgs: getWranglerArgs({
-			configPath,
-			config,
-			env,
-			remote,
-			args: asStringOrNumberArray(args.args),
+			...(configPath !== undefined ? { configPath } : {}),
+			...(config !== undefined ? { config } : {}),
+			...(env !== undefined ? { env } : {}),
+			...(remote !== undefined ? { remote } : {}),
+			...(wranglerExtraArgs !== undefined ? { args: wranglerExtraArgs } : {}),
 		}),
 	};
 }

@@ -658,7 +658,7 @@ describe("DOShardedTagCache", () => {
 				numberOfReplicas: 1,
 				shardType: "hard",
 			});
-			const tags = [{ tag: "tag1", stale: 1000 }];
+			const tags = [{ tag: "tag1", stale: 1000, expire: null }];
 			await cache.performWriteTagsWithRetry(doId, tags);
 			expect(writeTagsMock).toHaveBeenCalledTimes(2);
 			expect(spiedFn).toHaveBeenCalledTimes(2);
@@ -677,7 +677,7 @@ describe("DOShardedTagCache", () => {
 				throw new Error("error");
 			});
 			const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-			const tags = [{ tag: "tag1", stale: 1000 }];
+			const tags = [{ tag: "tag1", stale: 1000, expire: null }];
 			await cache.performWriteTagsWithRetry(
 				new DOId({ baseShardId: "shard-1", numberOfReplicas: 1, shardType: "hard" }),
 				tags,

@@ -63,7 +63,7 @@ import {
  */
 async function populateCacheCommand(
 	target: "local" | "remote",
-	args: WithWranglerArgs<{ cacheChunkSize?: number }>
+	args: WithWranglerArgs<{ cacheChunkSize: number | undefined }>
 ) {
 	printHeaders(`populate cache - ${target}`);
 
@@ -537,8 +537,12 @@ async function populateKVIncrementalCache(
 			],
 			{
 				target: populateCacheOptions.target,
-				environment: populateCacheOptions.environment,
-				configPath: populateCacheOptions.wranglerConfigPath,
+				...(populateCacheOptions.environment !== undefined
+					? { environment: populateCacheOptions.environment }
+					: {}),
+				...(populateCacheOptions.wranglerConfigPath !== undefined
+					? { configPath: populateCacheOptions.wranglerConfigPath }
+					: {}),
 				logging: "error",
 			}
 		);
@@ -581,9 +585,13 @@ async function populateD1TagCache(
 			`--preview ${populateCacheOptions.shouldUsePreviewId}`,
 		],
 		{
-			target: populateCacheOptions.target,
-			environment: populateCacheOptions.environment,
-			configPath: populateCacheOptions.wranglerConfigPath,
+			...(populateCacheOptions.target === undefined ? {} : { target: populateCacheOptions.target }),
+			...(populateCacheOptions.environment !== undefined
+				? { environment: populateCacheOptions.environment }
+				: {}),
+			...(populateCacheOptions.wranglerConfigPath !== undefined
+				? { configPath: populateCacheOptions.wranglerConfigPath }
+				: {}),
 			logging: "error",
 		}
 	);
@@ -604,9 +612,13 @@ async function populateD1TagCache(
 			`--preview ${populateCacheOptions.shouldUsePreviewId}`,
 		],
 		{
-			target: populateCacheOptions.target,
-			environment: populateCacheOptions.environment,
-			configPath: populateCacheOptions.wranglerConfigPath,
+			...(populateCacheOptions.target === undefined ? {} : { target: populateCacheOptions.target }),
+			...(populateCacheOptions.environment !== undefined
+				? { environment: populateCacheOptions.environment }
+				: {}),
+			...(populateCacheOptions.wranglerConfigPath !== undefined
+				? { configPath: populateCacheOptions.wranglerConfigPath }
+				: {}),
 			logging: "error",
 		}
 	);

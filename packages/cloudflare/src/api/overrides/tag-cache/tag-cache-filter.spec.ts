@@ -97,11 +97,10 @@ describe("withFilter", () => {
 	});
 
 	it("should not create a function if getPathsByTags is not defined", async () => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { getPathsByTags: _, ...tagCacheWithoutGetPathsByTags } = mockedTagCache;
 		const tagCache = withFilter({
-			tagCache: {
-				...mockedTagCache,
-				getPathsByTags: undefined,
-			},
+			tagCache: tagCacheWithoutGetPathsByTags,
 			filterFn,
 		});
 
@@ -133,11 +132,10 @@ describe("withFilter", () => {
 	});
 
 	it("should not create a function if isStale is not defined", async () => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { isStale: _, ...tagCacheWithoutIsStale } = mockedTagCache;
 		const tagCache = withFilter({
-			tagCache: {
-				...mockedTagCache,
-				isStale: undefined,
-			},
+			tagCache: tagCacheWithoutIsStale,
 			filterFn,
 		});
 
