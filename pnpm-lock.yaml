@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@cloudflare/workers-types':
-      specifier: ^4.20260114.0
-      version: 4.20260116.0
+      specifier: ^4.20260417.1
+      version: 4.20260417.1
     '@dotenvx/dotenvx':
       specifier: 1.31.0
       version: 1.31.0
@@ -204,7 +204,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/bugs/gh-219:
     dependencies:
@@ -231,7 +231,7 @@ importers:
         version: 2.1.1
       drizzle-orm:
         specifier: ^0.38.3
-        version: 0.38.4(@cloudflare/workers-types@4.20260116.0)(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.12)(@types/react@19.2.7)(better-sqlite3@11.8.1)(knex@3.1.0(better-sqlite3@11.8.1)(pg@8.16.0))(pg@8.16.0)(prisma@6.7.0(typescript@5.9.3))(react@19.2.4)
+        version: 0.38.4(@cloudflare/workers-types@4.20260417.1)(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.12)(@types/react@19.2.7)(better-sqlite3@11.8.1)(knex@3.1.0(better-sqlite3@11.8.1)(pg@8.16.0))(pg@8.16.0)(prisma@6.7.0(typescript@5.9.3))(react@19.2.4)
       firebase:
         specifier: ^11.1.0
         version: 11.2.0
@@ -283,7 +283,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
-        version: 4.20260116.0
+        version: 4.20260417.1
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.5
@@ -331,7 +331,7 @@ importers:
         version: 39.4.2(rollup@4.40.1)
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/bugs/gh-223:
     dependencies:
@@ -353,7 +353,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
-        version: 4.20260116.0
+        version: 4.20260417.1
       '@opennextjs/cloudflare':
         specifier: workspace:*
         version: link:../../../packages/cloudflare
@@ -386,7 +386,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/create-next-app:
     dependencies:
@@ -432,7 +432,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/e2e/app-pages-router:
     dependencies:
@@ -478,7 +478,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/e2e/app-router:
     dependencies:
@@ -524,7 +524,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/e2e/experimental:
     dependencies:
@@ -558,7 +558,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/e2e/pages-router:
     dependencies:
@@ -604,7 +604,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/e2e/shared:
     dependencies:
@@ -663,7 +663,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/next-partial-prerendering:
     dependencies:
@@ -724,7 +724,7 @@ importers:
         version: 5.5.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/overrides/d1-tag-next:
     dependencies:
@@ -758,7 +758,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/overrides/kv-tag-next:
     dependencies:
@@ -792,7 +792,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/overrides/memory-queue:
     dependencies:
@@ -826,7 +826,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/overrides/r2-incremental-cache:
     dependencies:
@@ -860,7 +860,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/overrides/static-assets-incremental-cache:
     dependencies:
@@ -894,7 +894,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/playground14:
     dependencies:
@@ -922,7 +922,7 @@ importers:
         version: 0.34.5
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/playground15:
     dependencies:
@@ -947,7 +947,7 @@ importers:
         version: 22.19.17
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/playground16:
     dependencies:
@@ -987,7 +987,7 @@ importers:
         version: 4.1.17
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/prisma:
     dependencies:
@@ -1027,7 +1027,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/ssg-app:
     dependencies:
@@ -1061,7 +1061,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   examples/vercel-blog-starter:
     dependencies:
@@ -1116,7 +1116,7 @@ importers:
         version: 5.9.3
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
 
   packages/cloudflare:
     dependencies:
@@ -1146,14 +1146,14 @@ importers:
         version: 0.8.6
       wrangler:
         specifier: 'catalog:'
-        version: 4.67.0(@cloudflare/workers-types@4.20260116.0)
+        version: 4.67.0(@cloudflare/workers-types@4.20260417.1)
       yargs:
         specifier: 'catalog:'
         version: 18.0.0
     devDependencies:
       '@cloudflare/workers-types':
         specifier: 'catalog:'
-        version: 4.20260116.0
+        version: 4.20260417.1
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.39.4
@@ -1701,8 +1701,8 @@ packages:
   '@cloudflare/workers-types@4.20250214.0':
     resolution: {integrity: sha512-+M8oOFVbyXT5GeJrYLWMUGyPf5wGB4+k59PPqdedtOig7NjZ5r4S79wMdaZ/EV5IV8JPtZBSNjTKpDnNmfxjaQ==}
 
-  '@cloudflare/workers-types@4.20260116.0':
-    resolution: {integrity: sha512-iMZIQDco7ARzzH+r8j90757kbPKEetKY3/6V5UurOzS6T1GJ+rsREw5i7vlBA4XjFV5UMaPtUD6HuUFSMLcxPQ==}
+  '@cloudflare/workers-types@4.20260417.1':
+    resolution: {integrity: sha512-ke3GkFfFyfSxdLRR6LPbnfYAu3RNKqX0eYfu/FNnluBN9rLgYVqT+QEPgSEx1yq7XTOok+Bub1td9xvknaOz4A==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -10335,7 +10335,7 @@ snapshots:
 
   '@cloudflare/workers-types@4.20250214.0': {}
 
-  '@cloudflare/workers-types@4.20260116.0': {}
+  '@cloudflare/workers-types@4.20260417.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -13900,9 +13900,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260116.0)(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.12)(@types/react@19.2.7)(better-sqlite3@11.8.1)(knex@3.1.0(better-sqlite3@11.8.1)(pg@8.16.0))(pg@8.16.0)(prisma@6.7.0(typescript@5.9.3))(react@19.2.4):
+  drizzle-orm@0.38.4(@cloudflare/workers-types@4.20260417.1)(@libsql/client@0.14.0)(@opentelemetry/api@1.9.0)(@prisma/client@6.7.0(prisma@6.7.0(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.12)(@types/react@19.2.7)(better-sqlite3@11.8.1)(knex@3.1.0(better-sqlite3@11.8.1)(pg@8.16.0))(pg@8.16.0)(prisma@6.7.0(typescript@5.9.3))(react@19.2.4):
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20260116.0
+      '@cloudflare/workers-types': 4.20260417.1
       '@libsql/client': 0.14.0
       '@opentelemetry/api': 1.9.0
       '@prisma/client': 6.7.0(prisma@6.7.0(typescript@5.9.3))(typescript@5.9.3)
@@ -18556,7 +18556,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260219.0
       '@cloudflare/workerd-windows-64': 1.20260219.0
 
-  wrangler@4.67.0(@cloudflare/workers-types@4.20260116.0):
+  wrangler@4.67.0(@cloudflare/workers-types@4.20260417.1):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@cloudflare/unenv-preset': 2.14.0(unenv@2.0.0-rc.24)(workerd@1.20260219.0)
@@ -18567,7 +18567,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       workerd: 1.20260219.0
     optionalDependencies:
-      '@cloudflare/workers-types': 4.20260116.0
+      '@cloudflare/workers-types': 4.20260417.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil
