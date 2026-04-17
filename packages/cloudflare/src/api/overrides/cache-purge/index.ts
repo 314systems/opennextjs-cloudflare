@@ -1,4 +1,5 @@
 import { error } from "@opennextjs/aws/adapters/logger.js";
+import type { ResolvedRoute } from "@opennextjs/aws/types/open-next.js";
 import type { CDNInvalidationHandler } from "@opennextjs/aws/types/overrides.js";
 
 import { getCloudflareContext } from "../../cloudflare-context.js";
@@ -8,10 +9,16 @@ interface PurgeOptions {
 	type: "durableObject" | "direct";
 }
 
+type CDNPath = {
+	initialPath: string;
+	rawPath: string;
+	resolvedRoutes: ResolvedRoute[];
+};
+
 export const purgeCache = ({ type = "direct" }: PurgeOptions): CDNInvalidationHandler => {
 	return {
 		name: "cloudflare",
-		async invalidatePaths(paths) {
+		async invalidatePaths(paths: CDNPath[]) {
 			const { env } = getCloudflareContext();
 			const tags = paths.map((path) => `_N_T_${path.rawPath}`);
 			debugCache("cdnInvalidation", "Invalidating paths:", tags);
