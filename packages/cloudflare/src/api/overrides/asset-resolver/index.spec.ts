@@ -1,3 +1,4 @@
+import type { InternalResult } from "@opennextjs/aws/types/open-next.js";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { isUserWorkerFirst } from "./index.js";
@@ -27,13 +28,16 @@ describe("maybeGetAssetResult", () => {
 			method,
 			rawPath,
 			headers: { accept: "*/*" },
-		}) as unknown as Parameters<typeof resolver.maybeGetAssetResult>[0];
+		}) as unknown as InternalResult;
+
+	const callResolver = (method: string, rawPath: string): Promise<InternalResult | undefined> =>
+		Promise.resolve(resolver.maybeGetAssetResult!(makeEvent(method, rawPath)));
 
 	test("GET request returns response body", async () => {
 		const body = new ReadableStream();
 		mockAssetsFetch.mockResolvedValue(new Response(body, { status: 200 }));
 
-		const result = await resolver.maybeGetAssetResult(makeEvent("GET", "/style.css"));
+		const result = await callResolver("GET", "/style.css");
 
 		expect(result).toBeDefined();
 		expect(result!.statusCode).toBe(200);
@@ -43,7 +47,7 @@ describe("maybeGetAssetResult", () => {
 	test("HEAD request returns null body", async () => {
 		mockAssetsFetch.mockResolvedValue(new Response(null, { status: 200 }));
 
-		const result = await resolver.maybeGetAssetResult(makeEvent("HEAD", "/style.css"));
+		const result = await callResolver("HEAD", "/style.css");
 
 		expect(result).toBeDefined();
 		expect(result!.statusCode).toBe(200);
@@ -53,13 +57,13 @@ describe("maybeGetAssetResult", () => {
 	test("returns undefined for 404 responses", async () => {
 		mockAssetsFetch.mockResolvedValue(new Response(null, { status: 404 }));
 
-		const result = await resolver.maybeGetAssetResult(makeEvent("GET", "/missing.css"));
+		const result = await callResolver("GET", "/missing.css");
 
 		expect(result).toBeUndefined();
 	});
 
 	test("returns undefined for POST requests", async () => {
-		const result = await resolver.maybeGetAssetResult(makeEvent("POST", "/style.css"));
+		const result = await callResolver("POST", "/style.css");
 
 		expect(result).toBeUndefined();
 		expect(mockAssetsFetch).not.toHaveBeenCalled();
@@ -68,7 +72,7 @@ describe("maybeGetAssetResult", () => {
 	test("returns undefined when run_worker_first is false", async () => {
 		globalThis.__ASSETS_RUN_WORKER_FIRST__ = false;
 
-		const result = await resolver.maybeGetAssetResult(makeEvent("GET", "/style.css"));
+		const result = await callResolver("GET", "/style.css");
 
 		expect(result).toBeUndefined();
 		expect(mockAssetsFetch).not.toHaveBeenCalled();
