@@ -17,8 +17,8 @@
 	},
 	"dependencies": {
 		"next": "^15.5.15",
-		"react": "^19.0.4",
-		"react-dom": "^19.0.4"
+		"react": "^19.2.5",
+		"react-dom": "^19.2.5"
 	},
 	"devDependencies": {
 		"@opennextjs/cloudflare": "workspace:*",
