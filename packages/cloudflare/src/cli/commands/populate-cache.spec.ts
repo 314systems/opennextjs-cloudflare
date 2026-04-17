@@ -135,7 +135,7 @@ describe("populateCache", async () => {
 			await rm(buildOptions.outputDir, { recursive: true, force: true });
 		});
 
-		test.each<PopulateCacheOptions>([
+		test.for<PopulateCacheOptions>([
 			{ target: "local", shouldUsePreviewId: false },
 			{ target: "remote", shouldUsePreviewId: false },
 			{ target: "remote", shouldUsePreviewId: true },
