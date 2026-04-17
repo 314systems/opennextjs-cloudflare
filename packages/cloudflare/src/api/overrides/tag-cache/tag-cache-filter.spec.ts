@@ -1,4 +1,4 @@
-import { NextModeTagCache } from "@opennextjs/aws/types/overrides.js";
+import { NextModeTagCache, NextModeTagCacheWriteInput } from "@opennextjs/aws/types/overrides.js";
 import { describe, expect, it, vi } from "vitest";
 
 import { softTagFilter, withFilter } from "./tag-cache-filter.js";
@@ -13,7 +13,10 @@ const mockedTagCache = {
 	isStale: vi.fn(),
 } satisfies NextModeTagCache;
 
-const filterFn = (tag: string) => tag.startsWith("valid_");
+const filterFn = (t: string | NextModeTagCacheWriteInput) => {
+	const tag = typeof t === "string" ? t : t.tag;
+	return tag.startsWith("valid_");
+};
 
 describe("withFilter", () => {
 	it("should filter out tags based on writeTags", async () => {
