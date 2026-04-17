@@ -107,6 +107,7 @@ vi.mock("@opennextjs/aws/logger.js", () => ({
 
 vi.mock("../utils/ensure-r2-bucket.js");
 vi.mock("wrangler");
+vi.mock("ts-tqdm", () => ({ tqdm: (iter: Iterable<unknown>) => iter }));
 
 describe("populateCache", async () => {
 	const testDir = await mkdtemp(path.join(os.tmpdir(), "opennext-cache-test-"));
