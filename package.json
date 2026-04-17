@@ -3,11 +3,11 @@
 	"version": "0.0.0",
 	"private": true,
 	"devDependencies": {
-		"@changesets/changelog-github": "^0.5.1",
-		"@changesets/cli": "^2.29.2",
+		"@changesets/changelog-github": "^0.6.0",
+		"@changesets/cli": "^2.30.0",
 		"@playwright/test": "catalog:",
-		"pkg-pr-new": "^0.0.60",
-		"prettier": "3.3.3",
+		"pkg-pr-new": "^0.0.66",
+		"prettier": "3.8.3",
 		"typescript": "catalog:"
 	},
 	"scripts": {
