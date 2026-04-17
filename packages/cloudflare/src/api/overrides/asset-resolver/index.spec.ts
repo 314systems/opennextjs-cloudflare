@@ -1,5 +1,5 @@
 import type { InternalResult } from "@opennextjs/aws/types/open-next.js";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, test, vi } from "vitest";
 
 import { isUserWorkerFirst } from "./index.js";
 
@@ -54,7 +54,7 @@ describe("maybeGetAssetResult", () => {
 		expect(result!.body).toBeNull();
 	});
 
-	test("returns undefined for 404 responses", async () => {
+	it("returns undefined for 404 responses", async () => {
 		mockAssetsFetch.mockResolvedValue(new Response(null, { status: 404 }));
 
 		const result = await callResolver("GET", "/missing.css");
@@ -62,14 +62,14 @@ describe("maybeGetAssetResult", () => {
 		expect(result).toBeUndefined();
 	});
 
-	test("returns undefined for POST requests", async () => {
+	it("returns undefined for POST requests", async () => {
 		const result = await callResolver("POST", "/style.css");
 
 		expect(result).toBeUndefined();
 		expect(mockAssetsFetch).not.toHaveBeenCalled();
 	});
 
-	test("returns undefined when run_worker_first is false", async () => {
+	it("returns undefined when run_worker_first is false", async () => {
 		globalThis.__ASSETS_RUN_WORKER_FIRST__ = false;
 
 		const result = await callResolver("GET", "/style.css");
