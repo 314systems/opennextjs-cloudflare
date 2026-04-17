@@ -1,5 +1,3 @@
-import process from "node:process";
-
 /** Name of the env var containing the mapping */
 export const DEPLOYMENT_MAPPING_ENV_NAME = "CF_DEPLOYMENT_MAPPING";
 /** Version used for the latest worker */
@@ -27,7 +25,7 @@ let deploymentMapping: Record<string, string>;
  * @param request
  * @returns
  */
-export function maybeGetSkewProtectionResponse(request: Request): Promise<Response> | Response | undefined {
+export async function maybeGetSkewProtectionResponse(request: Request): Promise<Response | undefined> {
 	// no early return as esbuild would not treeshake the code.
 	if (__SKEW_PROTECTION_ENABLED__) {
 		const url = new URL(request.url);
@@ -68,7 +66,8 @@ export function maybeGetSkewProtectionResponse(request: Request): Promise<Respon
 		const headers = new Headers(request.headers);
 		headers.delete("origin");
 
-		return fetch(requestToOlderDeployment, { headers });
+		const response = await fetch(requestToOlderDeployment, { headers });
+		return response;
 	}
 	return undefined;
 }

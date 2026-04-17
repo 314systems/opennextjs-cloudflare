@@ -11,7 +11,7 @@ export { DOShardedTagCache } from "./.build/durable-objects/sharded-tag-cache.js
 const worker: ExportedHandler<CloudflareEnv> = {
 	async fetch(request: Request, env: CloudflareEnv, ctx: ExecutionContext): Promise<Response> {
 		return runWithCloudflareRequestContext(request, env, ctx, async () => {
-			const response = maybeGetSkewProtectionResponse(request);
+			const response = await maybeGetSkewProtectionResponse(request);
 
 			if (response) {
 				return response;
