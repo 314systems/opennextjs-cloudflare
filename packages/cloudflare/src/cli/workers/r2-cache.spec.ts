@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import handler from "./r2-cache.js";
-import { ERR_BINDING_NOT_FOUND, ERR_INVALID_REQUEST, ERR_WRITE_FAILED } from "./r2-cache-types.js";
+import {
+	ERR_BINDING_NOT_FOUND,
+	ERR_INVALID_REQUEST,
+	ERR_WRITE_FAILED,
+	type R2ErrorResponse,
+} from "./r2-cache-types.js";
 
 const mockPut = vi.fn();
 const mockR2Bucket = { put: mockPut } as unknown as R2Bucket;
@@ -80,7 +85,7 @@ describe("r2-cache worker", () => {
 			const response = await handler.fetch(request, { R2: mockR2Bucket });
 			expect(response.status).toBe(400);
 
-			const body = await response.json();
+			const body = (await response.json()) as R2ErrorResponse;
 			expect(body.success).toBe(false);
 			expect(body.code).toBe(ERR_INVALID_REQUEST);
 		});
@@ -122,7 +127,7 @@ describe("r2-cache worker", () => {
 			const response = await handler.fetch(request, { R2: mockR2Bucket });
 			expect(response.status).toBe(500);
 
-			const body = await response.json();
+			const body = (await response.json()) as R2ErrorResponse;
 			expect(body).toEqual({
 				success: false,
 				error: expect.stringContaining("cache/key1"),

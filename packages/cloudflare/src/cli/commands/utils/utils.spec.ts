@@ -25,6 +25,7 @@ const mockCompileOpenNextConfig = vi.fn(async () => ({
 	buildDir: "/build",
 }));
 vi.mock("@opennextjs/aws/build/compileConfig.js", () => ({
+	// @ts-expect-error - partial mock
 	compileOpenNextConfig: (...args: unknown[]) => mockCompileOpenNextConfig(...args),
 }));
 
