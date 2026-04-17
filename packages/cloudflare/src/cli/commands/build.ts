@@ -1,5 +1,5 @@
 import logger from "@opennextjs/aws/logger.js";
-import type yargs from "yargs";
+import type { Argv } from "yargs";
 
 import { build as buildImpl } from "../build/build.js";
 import { askConfirmation } from "../utils/ask-confirmation.js";
@@ -62,7 +62,7 @@ export async function buildCommand(
  *
  * Consumes 1 positional parameter.
  */
-export function addBuildCommand<T extends yargs.Argv>(y: T): yargs.Argv {
+export function addBuildCommand<T>(y: Argv<T>): Argv<T> {
 	return y.command(
 		"build [args..]",
 		"Build an OpenNext Cloudflare worker",

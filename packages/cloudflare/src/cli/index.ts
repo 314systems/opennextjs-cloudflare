@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import logger from "@opennextjs/aws/logger.js";
-import yargs from "yargs";
+import yargs, { type Argv } from "yargs";
 
 import { getVersion } from "./build/utils/version.js";
 import { addBuildCommand } from "./commands/build.js";
@@ -11,7 +11,7 @@ import { addPopulateCacheCommand } from "./commands/populate-cache.js";
 import { addPreviewCommand } from "./commands/preview.js";
 import { addUploadCommand } from "./commands/upload.js";
 
-export function runCommand(): ReturnType<yargs.Argv["parse"]> {
+export function runCommand(): ReturnType<Argv["parse"]> {
 	const y = yargs(process.argv.slice(2).filter((arg) => arg !== "--"))
 		.scriptName("opennextjs-cloudflare")
 		.parserConfiguration({ "unknown-options-as-args": true })
