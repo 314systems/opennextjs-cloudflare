@@ -1,12 +1,12 @@
-import * as fs from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import * as path from "node:path";
 
 import { parse } from "@dotenvx/dotenvx";
 import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
 
 function readEnvFile(filePath: string) {
-	if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-		return parse(fs.readFileSync(filePath, "utf-8"));
+	if (existsSync(filePath) && statSync(filePath).isFile()) {
+		return parse(readFileSync(filePath, "utf-8"));
 	}
 }
 

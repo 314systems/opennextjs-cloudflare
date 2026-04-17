@@ -79,7 +79,7 @@ export async function build(
 	await patchOriginalNextConfig(options);
 
 	compileCache(options);
-	compileEnvFiles(options);
+	await compileEnvFiles(options);
 	await compileInit(options, wranglerConfig);
 	await compileImages(options);
 	await compileSkewProtection(options, config);
@@ -93,7 +93,7 @@ export async function build(
 		const { useTagCache, metaFiles } = createCacheAssets(options);
 
 		if (useTagCache) {
-			compileCacheAssetsManifestSqlFile(options, metaFiles);
+			await compileCacheAssetsManifestSqlFile(options, metaFiles);
 		}
 	}
 

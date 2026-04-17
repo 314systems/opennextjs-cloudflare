@@ -78,6 +78,7 @@
 		"eslint-plugin-simple-import-sort": "catalog:",
 		"eslint-plugin-unicorn": "catalog:",
 		"globals": "catalog:",
+		"memfs": "^4.57.2",
 		"mock-fs": "catalog:",
 		"next": "catalog:",
 		"picomatch": "^4.0.2",

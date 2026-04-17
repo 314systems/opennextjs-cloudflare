@@ -1,4 +1,5 @@
-import fs from "node:fs";
+import { existsSync } from "node:fs";
+import { appendFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 /**
@@ -12,7 +13,7 @@ import path from "node:path";
  * @param opts.appendIf A function that receives the current file content and returns `true` if the text should be appended to it, the condition is skipped when the file is being created. Defaults to a function that always returns true.
  * @param opts.appendPrefix A string that will be inserted between the pre-existing file's content and the new text in case the file already existed. Defaults to an empty string.
  */
-export function conditionalAppendFileSync(
+export async function conditionalAppendFile(
 	filepath: string,
 	text: string,
 	{
@@ -22,16 +23,16 @@ export function conditionalAppendFileSync(
 		appendIf?: (fileContent: string) => boolean;
 		appendPrefix?: string;
 	} = {}
-): void {
-	const fileExists = fs.existsSync(filepath);
-	const maybeFileContent = fileExists ? fs.readFileSync(filepath, "utf8") : "";
+): Promise<void> {
+	const fileExists = existsSync(filepath);
+	const maybeFileContent = fileExists ? await readFile(filepath, "utf8") : "";
 
 	if (!fileExists) {
 		const dir = path.dirname(filepath);
-		fs.mkdirSync(dir, { recursive: true });
+		await mkdir(dir, { recursive: true });
 	}
 
 	if (!fileExists || appendIf(maybeFileContent)) {
-		fs.appendFileSync(filepath, `${maybeFileContent.length > 0 ? appendPrefix : ""}${text}`);
+		await appendFile(filepath, `${maybeFileContent.length > 0 ? appendPrefix : ""}${text}`);
 	}
 }

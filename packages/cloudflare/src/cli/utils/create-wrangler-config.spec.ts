@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -52,9 +52,9 @@ vi.mock("./ask-account-selection.js", () => ({
 describe("createWranglerConfigFile", () => {
 	let tmpDir: string;
 
-	beforeEach(() => {
-		tmpDir = mkdtempSync(join(tmpdir(), "wrangler-config-test-"));
-		writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "next-app" }));
+	beforeEach(async () => {
+		tmpDir = await mkdtemp(join(tmpdir(), "wrangler-config-test-"));
+		await writeFile(join(tmpDir, "package.json"), JSON.stringify({ name: "next-app" }));
 		vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "test-account-id");
 		vi.stubGlobal(
 			"fetch",
@@ -64,15 +64,15 @@ describe("createWranglerConfigFile", () => {
 		);
 	});
 
-	afterEach(() => {
-		rmSync(tmpDir, { recursive: true, force: true });
+	afterEach(async () => {
+		await rm(tmpDir, { recursive: true, force: true });
 		vi.unstubAllEnvs();
 		vi.unstubAllGlobals();
 	});
 
 	it("should create config with caching enabled", async () => {
 		// Auth succeeds
-		vi.mocked(runWrangler).mockReturnValue({
+		vi.mocked(runWrangler).mockResolvedValue({
 			success: true,
 			stdout: JSON.stringify({ type: "oauth", token: "test-token" }),
 			stderr: "",
@@ -84,7 +84,7 @@ describe("createWranglerConfigFile", () => {
 		const result = await createWranglerConfigFile(tmpDir);
 
 		expect(result).toEqual({ cachingEnabled: true });
-		expect(readFileSync(join(tmpDir, "wrangler.jsonc"), "utf8")).toMatchInlineSnapshot(`
+		expect(await readFile(join(tmpDir, "wrangler.jsonc"), "utf8")).toMatchInlineSnapshot(`
 			"{
 				"$schema": "node_modules/wrangler/config-schema.json",
 				"main": ".open-next/worker.js",
@@ -128,7 +128,7 @@ describe("createWranglerConfigFile", () => {
 
 	it("should create config with caching disabled", async () => {
 		// Auth fails → maybeCreateR2Bucket returns { success: false }
-		vi.mocked(runWrangler).mockReturnValue({
+		vi.mocked(runWrangler).mockResolvedValue({
 			success: false,
 			stdout: "",
 			stderr: "",
@@ -137,7 +137,7 @@ describe("createWranglerConfigFile", () => {
 		const result = await createWranglerConfigFile(tmpDir);
 
 		expect(result).toEqual({ cachingEnabled: false });
-		expect(readFileSync(join(tmpDir, "wrangler.jsonc"), "utf8")).toMatchInlineSnapshot(`
+		expect(await readFile(join(tmpDir, "wrangler.jsonc"), "utf8")).toMatchInlineSnapshot(`
 			"{
 				"$schema": "node_modules/wrangler/config-schema.json",
 				"main": ".open-next/worker.js",

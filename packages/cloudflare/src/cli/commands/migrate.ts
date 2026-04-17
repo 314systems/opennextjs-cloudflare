@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import childProcess from "node:child_process";
-import fs from "node:fs";
+import { existsSync } from "node:fs";
+import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -16,7 +17,7 @@ import { askConfirmation } from "../utils/ask-confirmation.js";
 import { createOpenNextConfigFile, findOpenNextConfig } from "../utils/create-open-next-config.js";
 import { createWranglerConfigFile, findWranglerConfig } from "../utils/create-wrangler-config.js";
 import { ensureNextjsVersionSupported } from "../utils/nextjs-support.js";
-import { conditionalAppendFileSync } from "./utils/files.js";
+import { conditionalAppendFile } from "./utils/files.js";
 import { printHeaders } from "./utils/utils.js";
 
 /**
@@ -89,17 +90,18 @@ async function migrateCommand(args: { forceInstall: boolean }): Promise<void> {
 	}
 
 	printStepTitle("Creating open-next.config.ts");
-	createOpenNextConfigFile("./", { cache: cachingEnabled });
+	await createOpenNextConfigFile("./", { cache: cachingEnabled });
 
-	const devVarsExists = fs.existsSync(".dev.vars");
+	const devVarsExists = existsSync(".dev.vars");
 	printStepTitle(`${devVarsExists ? "Updating" : "Creating"} .dev.vars file`);
-	conditionalAppendFileSync(".dev.vars", "NEXTJS_ENV=development\n", {
+	await conditionalAppendFile(".dev.vars", "NEXTJS_ENV=development\n", {
 		appendIf: (content) => !/\bNEXTJS_ENV\b/.test(content),
 		appendPrefix: "\n",
 	});
 
-	printStepTitle(`${fs.existsSync("public/_headers") ? "Updating" : "Creating"} public/_headers file`);
-	conditionalAppendFileSync(
+	const headersExists = existsSync("public/_headers");
+	printStepTitle(`${headersExists ? "Updating" : "Creating"} public/_headers file`);
+	await conditionalAppendFile(
 		"public/_headers",
 		"# https://developers.cloudflare.com/workers/static-assets/headers\n" +
 			"# https://opennext.js.org/cloudflare/caching#static-assets-caching\n" +
@@ -120,8 +122,8 @@ async function migrateCommand(args: { forceInstall: boolean }): Promise<void> {
 	};
 	try {
 		let packageJson: { scripts?: Record<string, string> } = {};
-		if (fs.existsSync("package.json")) {
-			packageJson = JSON.parse(fs.readFileSync("package.json", "utf8")) as {
+		if (existsSync("package.json")) {
+			packageJson = JSON.parse(await readFile("package.json", "utf8")) as {
 				scripts?: Record<string, string>;
 			};
 		}
@@ -132,7 +134,7 @@ async function migrateCommand(args: { forceInstall: boolean }): Promise<void> {
 			...openNextScripts,
 		};
 
-		fs.writeFileSync("package.json", JSON.stringify(packageJson, null, 2));
+		await writeFile("package.json", JSON.stringify(packageJson, null, 2));
 	} catch (error) {
 		logger.error("Failed to update package.json", (error as Error).message);
 		logger.warn(
@@ -144,9 +146,9 @@ async function migrateCommand(args: { forceInstall: boolean }): Promise<void> {
 		);
 	}
 
-	const gitIgnoreExists = fs.existsSync(".gitignore");
+	const gitIgnoreExists = existsSync(".gitignore");
 	printStepTitle(`${gitIgnoreExists ? "Updating" : "Creating"} .gitignore file`);
-	conditionalAppendFileSync(".gitignore", "# OpenNext\n.open-next\n", {
+	await conditionalAppendFile(".gitignore", "# OpenNext\n.open-next\n", {
 		appendIf: (content) => !content.includes(".open-next"),
 		appendPrefix: "\n",
 	});
@@ -158,7 +160,7 @@ async function migrateCommand(args: { forceInstall: boolean }): Promise<void> {
 	assert(nextConfig, "Next config file unexpectedly missing");
 
 	printStepTitle("Updating Next.js config");
-	conditionalAppendFileSync(
+	await conditionalAppendFile(
 		nextConfig.path,
 		"import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());\n",
 		{
@@ -170,12 +172,12 @@ async function migrateCommand(args: { forceInstall: boolean }): Promise<void> {
 	printStepTitle("Checking for edge runtime usage");
 	try {
 		const extensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".mts"];
-		const files = findFilesRecursive(projectDir, extensions);
+		const files = await findFilesRecursive(projectDir, extensions);
 		let foundEdgeRuntime = false;
 
 		for (const file of files) {
 			try {
-				const content = fs.readFileSync(file, "utf8");
+				const content = await readFile(file, "utf8");
 				if (content.includes('export const runtime = "edge"')) {
 					logger.warn(`Found edge runtime in: ${file}`);
 					foundEdgeRuntime = true;
@@ -236,19 +238,23 @@ const packageManagers = {
  * @param fileList - Accumulator array for found files (used internally for recursion)
  * @returns Array of file paths matching the specified extensions
  */
-function findFilesRecursive(dir: string, extensions: string[], fileList: string[] = []): string[] {
-	const files = fs.readdirSync(dir);
+async function findFilesRecursive(
+	dir: string,
+	extensions: string[],
+	fileList: string[] = []
+): Promise<string[]> {
+	const files = await readdir(dir);
 
-	files.forEach((file) => {
+	files.forEach(async (file) => {
 		const filePath = path.join(dir, file);
-		const stat = fs.statSync(filePath);
+		const stats = await stat(filePath);
 
-		if (stat.isDirectory()) {
+		if (stats.isDirectory()) {
 			// Skip node_modules, .next, .open-next, and other common build/cache directories
 			if (!["node_modules", ".next", ".open-next", ".git", "dist", "build"].includes(file)) {
-				findFilesRecursive(filePath, extensions, fileList);
+				await findFilesRecursive(filePath, extensions, fileList);
 			}
-		} else if (stat.isFile()) {
+		} else if (stats.isFile()) {
 			const ext = path.extname(file).toLowerCase();
 			if (extensions.includes(ext)) {
 				fileList.push(filePath);
@@ -268,7 +274,7 @@ function printStepTitle(title: string): void {
  *
  * @param appDir The directory where the config file should be created
  */
-function createNextConfigFile(appDir: string): void {
+async function createNextConfigFile(appDir: string): Promise<void> {
 	const nextConfigPath = path.join(appDir, "next.config.ts");
 	const content = `import type { NextConfig } from "next";
 
@@ -276,7 +282,7 @@ const nextConfig: NextConfig = {};
 
 export default nextConfig;
 `;
-	fs.writeFileSync(nextConfigPath, content);
+	await writeFile(nextConfigPath, content);
 }
 
 /**
@@ -316,7 +322,7 @@ async function maybeCreateNextConfigFileIfMissing(
 		return false;
 	}
 
-	createNextConfigFile(projectDir);
+	await createNextConfigFile(projectDir);
 	logger.info("Created next.config.ts\n");
 	return true;
 }

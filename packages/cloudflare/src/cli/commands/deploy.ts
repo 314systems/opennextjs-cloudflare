@@ -52,7 +52,7 @@ export async function deployCommand(args: WithWranglerArgs<{ cacheChunkSize?: nu
 
 	const deploymentMapping = await getDeploymentMapping(buildOpts, config, envVars);
 
-	const result = runWrangler(
+	const result = await runWrangler(
 		buildOpts,
 		[
 			"deploy",

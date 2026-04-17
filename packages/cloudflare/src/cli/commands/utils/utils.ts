@@ -69,7 +69,7 @@ export async function compileConfig(configPath: string | undefined): Promise<{
 			throw new Error("The `open-next.config.ts` file is required, aborting!");
 		}
 
-		configPath = createOpenNextConfigFile(nextAppDir, { cache: false });
+		configPath = await createOpenNextConfigFile(nextAppDir, { cache: false });
 	}
 
 	const { config, buildDir } = await compileOpenNextConfig(configPath, { compileEdge: true });

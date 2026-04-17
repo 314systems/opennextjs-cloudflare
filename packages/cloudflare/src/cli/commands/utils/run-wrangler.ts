@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { compareSemver } from "@opennextjs/aws/build/helper.js";
@@ -33,9 +33,9 @@ type WranglerOptions = {
  * @param options Build options.
  * @returns Whether yarn modern is used.
  */
-function isYarnModern(monorepoRoot: string) {
+async function isYarnModern(monorepoRoot: string) {
 	const packageJson: { packageManager?: string } = JSON.parse(
-		readFileSync(path.join(monorepoRoot, "package.json"), "utf-8")
+		await readFile(path.join(monorepoRoot, "package.json"), "utf-8")
 	);
 
 	if (!packageJson.packageManager?.startsWith("yarn")) return false;
@@ -54,8 +54,11 @@ function isYarnModern(monorepoRoot: string) {
  * @param args CLI args.
  * @returns Arguments with a passthrough flag injected when needed.
  */
-function injectPassthroughFlagForArgs(options: PackagerDetails, args: string[]) {
-	if (options.packager !== "npm" && (options.packager !== "yarn" || isYarnModern(options.monorepoRoot))) {
+async function injectPassthroughFlagForArgs(options: PackagerDetails, args: string[]) {
+	if (
+		options.packager !== "npm" &&
+		(options.packager !== "yarn" || (await isYarnModern(options.monorepoRoot)))
+	) {
 		return args;
 	}
 
@@ -89,11 +92,11 @@ function injectPassthroughFlagForArgs(options: PackagerDetails, args: string[]) 
  * @param wranglerOpts.env Additional environment variables to pass to the spawned process.
  * @returns The command result
  */
-export function runWrangler(
+export async function runWrangler(
 	options: PackagerDetails,
 	args: string[],
 	wranglerOpts: WranglerOptions = {}
-): WranglerCommandResult {
+): Promise<WranglerCommandResult> {
 	const noLogs = wranglerOpts.logging === "none";
 	const shouldPipeLogs = wranglerOpts.logging === "error";
 
@@ -102,7 +105,7 @@ export function runWrangler(
 		[
 			options.packager === "bun" ? "x" : "exec",
 			"wrangler",
-			...injectPassthroughFlagForArgs(
+			...(await injectPassthroughFlagForArgs(
 				options,
 				[
 					...args,
@@ -111,7 +114,7 @@ export function runWrangler(
 					wranglerOpts.target === "remote" && "--remote",
 					wranglerOpts.target === "local" && "--local",
 				].filter((v): v is string => !!v)
-			),
+			)),
 		],
 		{
 			shell: true,

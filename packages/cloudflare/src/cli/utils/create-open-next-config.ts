@@ -1,4 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { patchCode } from "@opennextjs/aws/build/patch/astCodePatcher.js";
@@ -28,17 +29,17 @@ export function findOpenNextConfig(appDir: string): string | undefined {
  * @param options.cache Whether to set up caching
  * @returns The path to the created configuration file
  */
-export function createOpenNextConfigFile(appDir: string, options: { cache: boolean }): string {
+export async function createOpenNextConfigFile(appDir: string, options: { cache: boolean }): Promise<string> {
 	const openNextConfigPath = join(appDir, "open-next.config.ts");
 
-	let content = readFileSync(join(getPackageTemplatesDirPath(), "open-next.config.ts"), "utf8");
+	let content = await readFile(join(getPackageTemplatesDirPath(), "open-next.config.ts"), "utf8");
 
 	if (!options.cache) {
 		content = patchCode(content, commentOutR2ImportRule);
 		content = patchCode(content, commentOutIncrementalCacheRule);
 	}
 
-	writeFileSync(openNextConfigPath, content);
+	await writeFile(openNextConfigPath, content);
 
 	return openNextConfigPath;
 }

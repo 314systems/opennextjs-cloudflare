@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import fsp from "node:fs/promises";
+import { createReadStream, existsSync } from "node:fs";
+import { cp, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
@@ -103,7 +103,7 @@ export async function populateCache(
 ): Promise<void> {
 	const { incrementalCache, tagCache } = config.default.override ?? {};
 
-	if (!fs.existsSync(buildOpts.outputDir)) {
+	if (!existsSync(buildOpts.outputDir)) {
 		throw new Error("Unable to populate cache: Open Next build not found");
 	}
 
@@ -117,7 +117,7 @@ export async function populateCache(
 				await populateKVIncrementalCache(buildOpts, wranglerConfig, populateCacheOptions, envVars);
 				break;
 			case STATIC_ASSETS_CACHE_NAME:
-				populateStaticAssetsIncrementalCache(buildOpts);
+				await populateStaticAssetsIncrementalCache(buildOpts);
 				break;
 			default:
 				logger.info("Incremental cache does not need populating");
@@ -128,7 +128,7 @@ export async function populateCache(
 		const name = await resolveCacheName(tagCache);
 		switch (name) {
 			case D1_TAG_NAME:
-				populateD1TagCache(buildOpts, wranglerConfig, populateCacheOptions);
+				await populateD1TagCache(buildOpts, wranglerConfig, populateCacheOptions);
 				break;
 			default:
 				logger.info("Tag cache does not need populating");
@@ -416,9 +416,9 @@ async function sendEntryToR2Worker(options: {
 					method: "POST",
 					headers: {
 						"x-opennext-cache-key": key,
-						"content-length": fs.statSync(filename).size.toString(),
+						"content-length": (await stat(filename)).size.toString(),
 					},
-					body: Readable.toWeb(fs.createReadStream(filename)) as unknown as ReadableStream,
+					body: Readable.toWeb(createReadStream(filename)) as unknown as ReadableStream,
 					signal: AbortSignal.timeout(60_000),
 					// @ts-expect-error - `duplex` is required for streaming request bodies in Node.js
 					duplex: "half",
@@ -509,25 +509,25 @@ async function populateKVIncrementalCache(
 		`Inserting ${assets.length} assets to ${populateCacheOptions.target} KV in chunks of ${chunkSize}`
 	);
 
-	const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), "open-next-"));
+	const tempDir = await mkdtemp(path.join(os.tmpdir(), "open-next-"));
 
 	for (const i of tqdm(Array.from({ length: totalChunks }, (_, i) => i))) {
 		const chunkPath = path.join(tempDir, `cache-chunk-${i}.json`);
 
 		const kvMapping = assets
 			.slice(i * chunkSize, (i + 1) * chunkSize)
-			.map(({ fullPath, key, buildId, isFetch }) => ({
+			.map(async ({ fullPath, key, buildId, isFetch }) => ({
 				key: computeCacheKey(key, {
 					prefix,
 					buildId,
 					cacheType: isFetch ? "fetch" : "cache",
 				}),
-				value: fs.readFileSync(fullPath, "utf8"),
+				value: (await readFile(fullPath, "utf8")).toString(),
 			}));
 
-		fs.writeFileSync(chunkPath, JSON.stringify(kvMapping));
+		await writeFile(chunkPath, JSON.stringify(kvMapping));
 
-		const result = runWrangler(
+		const result = await runWrangler(
 			buildOpts,
 			[
 				"kv bulk put",
@@ -543,7 +543,7 @@ async function populateKVIncrementalCache(
 			}
 		);
 
-		fs.rmSync(chunkPath, { force: true });
+		await rm(chunkPath, { force: true });
 
 		if (!result.success) {
 			throw new Error(`Wrangler kv bulk put command failed${result.stderr ? `:\n${result.stderr}` : ""}`);
@@ -553,7 +553,7 @@ async function populateKVIncrementalCache(
 	logger.info(`Successfully populated cache with ${assets.length} entries`);
 }
 
-function populateD1TagCache(
+async function populateD1TagCache(
 	buildOpts: BuildOptions,
 	config: WranglerConfig,
 	populateCacheOptions: PopulateCacheOptions
@@ -567,7 +567,7 @@ function populateD1TagCache(
 		throw new Error(`No D1 binding "${D1_TAG_BINDING_NAME}" found!`);
 	}
 
-	const result = runWrangler(
+	const result = await runWrangler(
 		buildOpts,
 		[
 			"d1 execute",
@@ -595,7 +595,7 @@ function populateD1TagCache(
 	// Schema migration: add `stale` and `expire` columns (idempotent, safe for existing deployments).
 	// The columns were added in v1.19 to support SWR.
 	// These commands are intentionally non-throwing — they fail harmlessly if the columns already exist.
-	runWrangler(
+	await runWrangler(
 		buildOpts,
 		[
 			"d1 execute",
@@ -614,10 +614,10 @@ function populateD1TagCache(
 	logger.info("\nSuccessfully created D1 table");
 }
 
-function populateStaticAssetsIncrementalCache(options: BuildOptions) {
+async function populateStaticAssetsIncrementalCache(options: BuildOptions) {
 	logger.info("\nPopulating Workers static assets...");
 
-	fs.cpSync(
+	await cp(
 		path.join(options.outputDir, "cache"),
 		path.join(options.outputDir, "assets", STATIC_ASSETS_CACHE_DIR),
 		{ recursive: true }

@@ -17,8 +17,8 @@ describe("createOpenNextConfigFile", () => {
 		rmSync(tmpDir, { recursive: true, force: true });
 	});
 
-	it("should create the config file with cache enabled", () => {
-		const result = createOpenNextConfigFile(tmpDir, { cache: true });
+	it("should create the config file with cache enabled", async () => {
+		const result = await createOpenNextConfigFile(tmpDir, { cache: true });
 
 		expect(result).toBe(join(tmpDir, "open-next.config.ts"));
 		expect(readFileSync(result, "utf8")).toMatchInlineSnapshot(`
@@ -33,8 +33,8 @@ describe("createOpenNextConfigFile", () => {
 		`);
 	});
 
-	it("should create the config file with cache disabled", () => {
-		const result = createOpenNextConfigFile(tmpDir, { cache: false });
+	it("should create the config file with cache disabled", async () => {
+		const result = await createOpenNextConfigFile(tmpDir, { cache: false });
 
 		expect(result).toBe(join(tmpDir, "open-next.config.ts"));
 		expect(readFileSync(result, "utf8")).toMatchInlineSnapshot(`

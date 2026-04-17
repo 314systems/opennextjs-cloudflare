@@ -30,8 +30,8 @@ function getErrorMessage(error: unknown): string {
  * @param options The build options containing packager and monorepo root
  * @returns The auth credentials if available, undefined otherwise
  */
-function getAuthCredentials(options: PackagerDetails): AuthCredentials | undefined {
-	const result = runWrangler(options, ["auth", "token", "--json"], { logging: "none" });
+async function getAuthCredentials(options: PackagerDetails): Promise<AuthCredentials | undefined> {
+	const result = await runWrangler(options, ["auth", "token", "--json"], { logging: "none" });
 	if (!result.success) {
 		return undefined;
 	}
@@ -100,8 +100,8 @@ async function getAccountId(client: Cloudflare): Promise<string | undefined> {
  * @param options The build options containing packager and monorepo root
  * @returns true if login was successful, false otherwise
  */
-function wranglerLogin(options: PackagerDetails): boolean {
-	const result = runWrangler(options, ["login"], { logging: "all" });
+async function wranglerLogin(options: PackagerDetails): Promise<boolean> {
+	const result = await runWrangler(options, ["login"], { logging: "all" });
 	return result.success;
 }
 
@@ -123,17 +123,17 @@ export async function ensureR2Bucket(
 		const { packager, root: monorepoRoot } = findPackagerAndRoot(projectDir);
 		const options = { packager, monorepoRoot };
 
-		let authCredentials = getAuthCredentials(options);
+		let authCredentials = await getAuthCredentials(options);
 
 		// If no credentials available, fall back to wrangler login
 		if (!authCredentials) {
-			const loginSuccess = wranglerLogin(options);
+			const loginSuccess = await wranglerLogin(options);
 			if (!loginSuccess) {
 				return { success: false, error: "wrangler login failed" };
 			}
 
 			// Get credentials after login
-			authCredentials = getAuthCredentials(options);
+			authCredentials = await getAuthCredentials(options);
 			if (!authCredentials) {
 				return { success: false, error: "Could not determine Cloudflare auth credentials after login" };
 			}

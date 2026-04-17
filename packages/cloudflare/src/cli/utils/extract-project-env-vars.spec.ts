@@ -1,4 +1,4 @@
-import { appendFileSync, writeFileSync } from "node:fs";
+import { appendFile, writeFile } from "node:fs/promises";
 
 import { BuildOptions } from "@opennextjs/aws/build/helper.js";
 import mockFs from "mock-fs";
@@ -34,8 +34,8 @@ describe("extractProjectEnvVars", () => {
 		});
 	});
 
-	it("should extract development env vars", () => {
-		writeFileSync(".dev.vars", 'NEXTJS_ENV = "development"');
+	it("should extract development env vars", async () => {
+		await writeFile(".dev.vars", 'NEXTJS_ENV = "development"');
 
 		const result = extractProjectEnvVars("development", options);
 		expect(result).toEqual({
@@ -46,8 +46,8 @@ describe("extractProjectEnvVars", () => {
 		});
 	});
 
-	it("should override env vars with those in a local file", () => {
-		writeFileSync(".env.production.local", "ENV_PROD_VAR=overridden");
+	it("should override env vars with those in a local file", async () => {
+		await writeFile(".env.production.local", "ENV_PROD_VAR=overridden");
 
 		const result = extractProjectEnvVars("production", options);
 		expect(result).toEqual({
@@ -57,8 +57,8 @@ describe("extractProjectEnvVars", () => {
 		});
 	});
 
-	it("should support referencing variables", () => {
-		appendFileSync(".env.production.local", "\nENV_PROD_LOCAL_VAR_REF=$ENV_PROD_LOCAL_VAR");
+	it("should support referencing variables", async () => {
+		await appendFile(".env.production.local", "\nENV_PROD_LOCAL_VAR_REF=$ENV_PROD_LOCAL_VAR");
 
 		const result = extractProjectEnvVars("production", options);
 		expect(result).toEqual({

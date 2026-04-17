@@ -1,4 +1,5 @@
-import fs from "node:fs";
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,8 +15,8 @@ export async function compileImages(options: BuildOptions): Promise<void> {
 	const imagesPath = path.join(templatesDir, "images.js");
 
 	const imagesManifestPath = path.join(options.appBuildOutputPath, ".next/images-manifest.json");
-	const imagesManifest = fs.existsSync(imagesManifestPath)
-		? JSON.parse(fs.readFileSync(imagesManifestPath, { encoding: "utf-8" }))
+	const imagesManifest = existsSync(imagesManifestPath)
+		? JSON.parse(await readFile(imagesManifestPath, { encoding: "utf-8" }))
 		: {};
 
 	const __IMAGES_REMOTE_PATTERNS__ = JSON.stringify(imagesManifest?.images?.remotePatterns ?? []);

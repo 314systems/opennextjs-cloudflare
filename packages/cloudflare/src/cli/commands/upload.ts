@@ -52,7 +52,7 @@ export async function uploadCommand(args: WithWranglerArgs<{ cacheChunkSize?: nu
 		envVars
 	);
 
-	const result = runWrangler(
+	const result = await runWrangler(
 		buildOpts,
 		[
 			"versions upload",

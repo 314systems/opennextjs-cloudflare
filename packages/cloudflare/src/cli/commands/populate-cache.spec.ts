@@ -1,8 +1,8 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
-import mockFs from "mock-fs";
 import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import type { Unstable_Config as WranglerConfig } from "wrangler";
 import { unstable_startWorker } from "wrangler";
@@ -14,25 +14,35 @@ import { getCacheAssets, populateCache, PopulateCacheOptions } from "./populate-
 import { WorkerEnvVar } from "./utils/helpers.js";
 
 describe("getCacheAssets", () => {
-	beforeAll(() => {
-		mockFs();
+	let testDir: string;
 
-		const fetchBaseDir = "/base/path/cache/__fetch/buildID";
-		const cacheDir = "/base/path/cache/buildID/path/to";
+	beforeAll(async () => {
+		testDir = await mkdtemp(path.join(os.tmpdir(), "opennext-cache-test-"));
+		const fetchBaseDir = path.join(testDir, "cache/__fetch/buildID");
+		const cacheDir = path.join(testDir, "cache/buildID/path/to");
 
-		mkdirSync(fetchBaseDir, { recursive: true });
-		mkdirSync(cacheDir, { recursive: true });
+		await mkdir(fetchBaseDir, { recursive: true });
+		await mkdir(cacheDir, { recursive: true });
 
 		for (let i = 0; i < 3; i++) {
-			writeFileSync(path.join(fetchBaseDir, `${i}`), "", { encoding: "utf-8" });
-			writeFileSync(path.join(cacheDir, `${i}.cache`), "", { encoding: "utf-8" });
+			await writeFile(path.join(fetchBaseDir, `${i}`), "", { encoding: "utf-8" });
+			await writeFile(path.join(cacheDir, `${i}.cache`), "", { encoding: "utf-8" });
 		}
 	});
 
-	afterAll(() => mockFs.restore());
+	afterAll(async () => {
+		await rm(testDir, { recursive: true, force: true });
+	});
 
 	test("list cache assets", () => {
-		expect(getCacheAssets({ outputDir: "/base/path" } as BuildOptions)).toMatchInlineSnapshot(`
+		const assets = getCacheAssets({ outputDir: testDir } as BuildOptions).map((asset) => ({
+			...asset,
+			fullPath: asset.fullPath
+				.split(path.sep)
+				.join("/")
+				.replace(testDir.split(path.sep).join("/"), "/base/path"),
+		}));
+		expect(assets).toMatchInlineSnapshot(`
       [
         {
           "buildId": "buildID",
@@ -76,7 +86,7 @@ describe("getCacheAssets", () => {
 });
 
 vi.mock("./utils/run-wrangler.js", () => ({
-	runWrangler: vi.fn(() => ({ success: true, stdout: "", stderr: "" })),
+	runWrangler: vi.fn(async () => ({ success: true, stdout: "", stderr: "" })),
 }));
 
 vi.mock("./utils/helpers.js", () => ({
@@ -87,10 +97,11 @@ vi.mock("./utils/helpers.js", () => ({
 vi.mock("../utils/ensure-r2-bucket.js");
 vi.mock("wrangler");
 
-describe("populateCache", () => {
+describe("populateCache", async () => {
+	const testDir = await mkdtemp(path.join(os.tmpdir(), "opennext-cache-test-"));
 	const buildOptions = {
-		appPath: "/test/app",
-		outputDir: "/test/output",
+		appPath: path.join(testDir, "app"),
+		outputDir: path.join(testDir, "output"),
 	} as BuildOptions;
 	const config = defineCloudflareConfig({
 		incrementalCache: r2IncrementalCache,
@@ -107,27 +118,21 @@ describe("populateCache", () => {
 	} as WranglerConfig;
 	const envVars = {} as WorkerEnvVar;
 
-	const setupMockFileSystem = () => {
-		mockFs({
-			"/test/output": {
-				cache: {
-					buildID: {
-						path: {
-							to: {
-								"test.cache": JSON.stringify({ data: "test" }),
-							},
-						},
-					},
-				},
-			},
-		});
+	const setupMockFileSystem = async () => {
+		const targetFile = path.join(buildOptions.outputDir, "cache/buildID/path/to/test.cache");
+		await mkdir(path.dirname(targetFile), { recursive: true });
+		await writeFile(targetFile, JSON.stringify({ data: "test" }));
 	};
 
+	afterAll(async () => {
+		await rm(testDir, { recursive: true, force: true });
+	});
+
 	describe("R2 incremental cache", () => {
-		afterEach(() => {
+		afterEach(async () => {
 			vi.resetAllMocks();
 			vi.useRealTimers();
-			mockFs.restore();
+			await rm(buildOptions.outputDir, { recursive: true, force: true });
 		});
 
 		test.each<PopulateCacheOptions>([
@@ -143,8 +148,8 @@ describe("populateCache", () => {
 						: "test-bucket";
 				const mockWorkerDispose = vi.fn();
 
-				setupMockFileSystem();
-				vi.useFakeTimers();
+				await setupMockFileSystem();
+				vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 				// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
 				vi.mocked(unstable_startWorker).mockResolvedValueOnce({
 					ready: Promise.resolve(),
@@ -183,7 +188,7 @@ describe("populateCache", () => {
 				);
 
 				if (populateCacheOptions.target === "remote") {
-					expect(ensureR2Bucket).toHaveBeenCalledWith("/test/app", bucketName, "eu");
+					expect(ensureR2Bucket).toHaveBeenCalledWith(buildOptions.appPath, bucketName, "eu");
 				} else {
 					expect(ensureR2Bucket).not.toHaveBeenCalled();
 				}
@@ -206,7 +211,7 @@ describe("populateCache", () => {
 		);
 
 		test("remote - exits when bucket provisioning fails", async () => {
-			setupMockFileSystem();
+			await setupMockFileSystem();
 			vi.mocked(ensureR2Bucket).mockResolvedValueOnce({
 				success: false,
 				error: "wrangler login failed",
@@ -228,8 +233,8 @@ describe("populateCache", () => {
 		});
 
 		test("retries timed out requests to the R2 worker", async () => {
-			setupMockFileSystem();
-			vi.useFakeTimers();
+			await setupMockFileSystem();
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 
 			const mockWorkerDispose = vi.fn();
 			// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
@@ -283,8 +288,8 @@ describe("populateCache", () => {
 		});
 
 		test("retries 5xx responses from the R2 worker", async () => {
-			setupMockFileSystem();
-			vi.useFakeTimers();
+			await setupMockFileSystem();
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 			vi.spyOn(AbortSignal, "timeout");
 
 			const mockWorkerDispose = vi.fn();
@@ -342,8 +347,8 @@ describe("populateCache", () => {
 		});
 
 		test("retries worker exceeded resource limits responses", async () => {
-			setupMockFileSystem();
-			vi.useFakeTimers();
+			await setupMockFileSystem();
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 
 			const mockWorkerDispose = vi.fn();
 			// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance
@@ -399,8 +404,8 @@ describe("populateCache", () => {
 		});
 
 		test("exhausts all retries with exponential backoff for 5xx responses", async () => {
-			setupMockFileSystem();
-			vi.useFakeTimers();
+			await setupMockFileSystem();
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
 
 			const mockWorkerDispose = vi.fn();
 			// @ts-expect-error - Mock unstable_startWorker to return a mock worker instance

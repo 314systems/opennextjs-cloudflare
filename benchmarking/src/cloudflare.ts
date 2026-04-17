@@ -1,5 +1,5 @@
-import nodeFsPromises from "node:fs/promises";
-import nodeFs from "node:fs";
+import { readdir, readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import nodePath from "node:path";
 import nodeChildProcess from "node:child_process";
 
@@ -16,7 +16,7 @@ export async function collectAppPathsToBenchmark(): Promise<
 		path: string;
 	}[]
 > {
-	const allExampleNames = await nodeFsPromises.readdir("../examples");
+	const allExampleNames = await readdir("../examples");
 
 	/**
 	 * Example applications that we don't want to benchmark
@@ -44,11 +44,11 @@ export async function collectAppPathsToBenchmark(): Promise<
  */
 export async function buildApp(dir: string): Promise<void> {
 	const packageJsonPath = `${dir}/package.json`;
-	if (!nodeFs.existsSync(packageJsonPath)) {
+	if (!existsSync(packageJsonPath)) {
 		throw new Error(`Error: package.json for app at "${dir}" not found`);
 	}
 
-	const packageJsonContent = JSON.parse(await nodeFsPromises.readFile(packageJsonPath, "utf8"));
+	const packageJsonContent = JSON.parse(await readFile(packageJsonPath, "utf8"));
 
 	const buildScript = "build:worker";
 
