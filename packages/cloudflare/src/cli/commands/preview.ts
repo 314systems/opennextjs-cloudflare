@@ -19,7 +19,7 @@ import {
  * @param args
  */
 export async function previewCommand(
-	args: WithWranglerArgs<{ cacheChunkSize?: number; remote: boolean }>
+	args: WithWranglerArgs<{ cacheChunkSize?: number | undefined; remote: boolean }>
 ): Promise<void> {
 	printHeaders("preview");
 
@@ -29,8 +29,8 @@ export async function previewCommand(
 	const wranglerConfig = await readWranglerConfig(args);
 	const envVars = await getEnvFromPlatformProxy(
 		{
-			configPath: args.wranglerConfigPath,
-			environment: args.env,
+			...(args.wranglerConfigPath !== undefined ? { configPath: args.wranglerConfigPath } : {}),
+			...(args.env !== undefined ? { environment: args.env } : {}),
 		},
 		buildOpts
 	);
@@ -41,9 +41,9 @@ export async function previewCommand(
 		wranglerConfig,
 		{
 			target: args.remote ? "remote" : "local",
-			environment: args.env,
-			wranglerConfigPath: args.wranglerConfigPath,
-			cacheChunkSize: args.cacheChunkSize,
+			...(args.env !== undefined ? { environment: args.env } : {}),
+			...(args.wranglerConfigPath !== undefined ? { wranglerConfigPath: args.wranglerConfigPath } : {}),
+			...(args.cacheChunkSize !== undefined ? { cacheChunkSize: args.cacheChunkSize } : {}),
 			shouldUsePreviewId: args.remote,
 		},
 		envVars

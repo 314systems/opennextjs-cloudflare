@@ -31,6 +31,7 @@ export function patchPagesRouterContext(buildOpts: BuildOptions) {
 							...options,
 						});
 					}
+					return undefined;
 				}
 			);
 		},

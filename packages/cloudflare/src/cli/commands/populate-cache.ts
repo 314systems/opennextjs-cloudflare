@@ -73,8 +73,8 @@ async function populateCacheCommand(
 	const wranglerConfig = await readWranglerConfig(args);
 	const envVars = await getEnvFromPlatformProxy(
 		{
-			configPath: args.wranglerConfigPath,
-			environment: args.env,
+			...(args.wranglerConfigPath !== undefined ? { configPath: args.wranglerConfigPath } : {}),
+			...(args.env !== undefined ? { environment: args.env } : {}),
 		},
 		buildOpts
 	);
@@ -85,9 +85,9 @@ async function populateCacheCommand(
 		wranglerConfig,
 		{
 			target,
-			environment: args.env,
-			wranglerConfigPath: args.wranglerConfigPath,
-			cacheChunkSize: args.cacheChunkSize,
+			...(args.env !== undefined ? { environment: args.env } : {}),
+			...(args.wranglerConfigPath !== undefined ? { wranglerConfigPath: args.wranglerConfigPath } : {}),
+			...(args.cacheChunkSize !== undefined ? { cacheChunkSize: args.cacheChunkSize } : {}),
 			shouldUsePreviewId: false,
 		},
 		envVars

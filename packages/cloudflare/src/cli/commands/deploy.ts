@@ -20,7 +20,7 @@ import {
  *
  * @param args
  */
-export async function deployCommand(args: WithWranglerArgs<{ cacheChunkSize?: number }>): Promise<void> {
+export async function deployCommand(args: WithWranglerArgs<{ cacheChunkSize?: number | undefined }>): Promise<void> {
 	printHeaders("deploy");
 
 	const { config } = await retrieveCompiledConfig();
@@ -30,8 +30,8 @@ export async function deployCommand(args: WithWranglerArgs<{ cacheChunkSize?: nu
 
 	const envVars = await getEnvFromPlatformProxy(
 		{
-			configPath: args.wranglerConfigPath,
-			environment: args.env,
+			...(args.wranglerConfigPath !== undefined ? { configPath: args.wranglerConfigPath } : {}),
+			...(args.env !== undefined ? { environment: args.env } : {}),
 		},
 		buildOpts
 	);
@@ -42,9 +42,9 @@ export async function deployCommand(args: WithWranglerArgs<{ cacheChunkSize?: nu
 		wranglerConfig,
 		{
 			target: "remote",
-			environment: args.env,
-			wranglerConfigPath: args.wranglerConfigPath,
-			cacheChunkSize: args.cacheChunkSize,
+			...(args.env !== undefined ? { environment: args.env } : {}),
+			...(args.wranglerConfigPath !== undefined ? { wranglerConfigPath: args.wranglerConfigPath } : {}),
+			...(args.cacheChunkSize !== undefined ? { cacheChunkSize: args.cacheChunkSize } : {}),
 			shouldUsePreviewId: false,
 		},
 		envVars
