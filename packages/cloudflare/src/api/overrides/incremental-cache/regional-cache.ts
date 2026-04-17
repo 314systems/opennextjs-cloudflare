@@ -266,4 +266,6 @@ function getTagsFromCacheEntry(entry: IncrementalCacheEntry<CacheEntryType>): st
 	if ("value" in entry.value) {
 		return entry.value.tags;
 	}
+
+	return undefined;
 }
