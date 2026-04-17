@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -9,19 +9,19 @@ import { createOpenNextConfigFile } from "./create-open-next-config.js";
 describe("createOpenNextConfigFile", () => {
 	let tmpDir: string;
 
-	beforeEach(() => {
-		tmpDir = mkdtempSync(join(tmpdir(), "open-next-config-test-"));
+	beforeEach(async () => {
+		tmpDir = await mkdtemp(join(tmpdir(), "open-next-config-test-"));
 	});
 
-	afterEach(() => {
-		rmSync(tmpDir, { recursive: true, force: true });
+	afterEach(async () => {
+		await rm(tmpDir, { recursive: true, force: true });
 	});
 
 	it("should create the config file with cache enabled", async () => {
 		const result = await createOpenNextConfigFile(tmpDir, { cache: true });
 
 		expect(result).toBe(join(tmpDir, "open-next.config.ts"));
-		expect(readFileSync(result, "utf8")).toMatchInlineSnapshot(`
+		expect(await readFile(result, "utf8")).toMatchInlineSnapshot(`
 			"// default open-next.config.ts file created by @opennextjs/cloudflare
 			import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 			import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/r2-incremental-cache";
@@ -37,7 +37,7 @@ describe("createOpenNextConfigFile", () => {
 		const result = await createOpenNextConfigFile(tmpDir, { cache: false });
 
 		expect(result).toBe(join(tmpDir, "open-next.config.ts"));
-		expect(readFileSync(result, "utf8")).toMatchInlineSnapshot(`
+		expect(await readFile(result, "utf8")).toMatchInlineSnapshot(`
 			"// default open-next.config.ts file created by @opennextjs/cloudflare
 			import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 			// import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/r2-incremental-cache";
