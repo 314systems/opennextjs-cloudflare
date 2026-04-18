@@ -1,19 +1,19 @@
 import { error, warn } from "@opennextjs/aws/adapters/logger.js";
 
-export type RemotePattern = {
+export interface RemotePattern {
 	protocol?: "http" | "https";
 	hostname: string;
 	port?: string;
 	// pathname is always set in the manifest (to `makeRe(pathname ?? '**', { dot: true }).source`)
 	pathname: string;
 	search?: string;
-};
+}
 
-export type LocalPattern = {
+export interface LocalPattern {
 	// pathname is always set in the manifest
 	pathname: string;
 	search?: string;
-};
+}
 
 /**
  * Handles requests to /_next/image(/), including image optimizations.
@@ -247,13 +247,8 @@ export async function handleCdnCgiImageRequest(requestURL: URL, env: CloudflareE
 export function parseCdnCgiImageRequest(
 	pathname: string
 ): { ok: true; url: string; static: boolean } | ErrorResult {
-	const match = pathname.match(/^\/cdn-cgi\/image\/(?<options>[^/]+)\/(?<url>.+)$/);
-	if (
-		match === null ||
-		// Valid URLs have at least one option
-		!match.groups?.options ||
-		!match.groups?.url
-	) {
+	const match = /^\/cdn-cgi\/image\/(?<options>[^/]+)\/(?<url>.+)$/.exec(pathname);
+	if (!match?.groups?.options || !match.groups.url) {
 		return { ok: false, message: "Invalid /cdn-cgi/image/ URL format" };
 	}
 
@@ -384,15 +379,15 @@ async function fetchWithRedirects(
 
 type FetchWithRedirectsResult = FetchWithRedirectsSuccessResult | FetchWithRedirectsErrorResult;
 
-type FetchWithRedirectsSuccessResult = {
+interface FetchWithRedirectsSuccessResult {
 	ok: true;
 	response: Response;
-};
+}
 
-type FetchWithRedirectsErrorResult = {
+interface FetchWithRedirectsErrorResult {
 	ok: false;
 	error: FetchImageError;
-};
+}
 
 type FetchImageError = "timed_out" | "too_many_redirects";
 
@@ -417,9 +412,9 @@ function createImageResponse(
 	return response;
 }
 
-type ImageResponseFlags = {
+interface ImageResponseFlags {
 	immutable: boolean;
-};
+}
 
 /**
  * Parses the image request URL and headers.
@@ -472,7 +467,7 @@ function parseImageRequest(
 	return result;
 }
 
-type ParseImageRequestURLSuccessResult = {
+interface ParseImageRequestURLSuccessResult {
 	ok: true;
 	/** Absolute or relative URL. */
 	url: string;
@@ -480,14 +475,14 @@ type ParseImageRequestURLSuccessResult = {
 	quality: number;
 	format: OptimizedImageFormat | null;
 	static: boolean;
-};
+}
 
 export type OptimizedImageFormat = "image/avif" | "image/webp";
 
-type ErrorResult = {
+interface ErrorResult {
 	ok: false;
 	message: string;
-};
+}
 
 /**
  * Validates that there is exactly one "url" query parameter.
@@ -712,10 +707,10 @@ function parseRelativeURL(relativeURL: string): ParseRelativeURLResult {
 	return result;
 }
 
-type ParseRelativeURLResult = {
+interface ParseRelativeURLResult {
 	pathname: string;
 	search: string;
-};
+}
 
 export function matchLocalPattern(pattern: LocalPattern, url: { pathname: string; search: string }): boolean {
 	if (pattern.search !== undefined && pattern.search !== url.search) {
@@ -748,7 +743,7 @@ export function matchRemotePattern(pattern: RemotePattern, url: URL): boolean {
 		return false;
 	}
 
-	if (pattern.hostname === undefined || !new RegExp(pattern.hostname).test(url.hostname)) {
+	if (!new RegExp(pattern.hostname).test(url.hostname)) {
 		return false;
 	}
 

@@ -99,7 +99,7 @@ export async function build(
 
 	await createServerBundle(options);
 
-	await compileDurableObjects(options);
+	compileDurableObjects(options);
 
 	await bundleServer(options, projectOpts);
 

@@ -33,7 +33,7 @@ async function migrateCommand(args: { forceInstall: boolean }): Promise<void> {
 	const projectDir = process.cwd();
 
 	const nextConfigFileCreated = await maybeCreateNextConfigFileIfMissing(projectDir, args.forceInstall).catch(
-		(e) => {
+		(e: unknown) => {
 			logger.error(`${e instanceof Error ? e.message : e}\n`);
 			process.exit(1);
 		}

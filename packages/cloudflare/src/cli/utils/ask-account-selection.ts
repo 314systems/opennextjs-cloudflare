@@ -24,7 +24,7 @@ export async function askAccountSelection(accounts: Account[]): Promise<string |
 			name: account.id,
 			message: account.name,
 		})),
-		format: (accountId) => `${accounts.find(({ id }) => id === accountId)?.name ?? ""}`,
+		format: (accountId) => accounts.find(({ id }) => id === accountId)?.name ?? "",
 	});
 
 	console.log("");

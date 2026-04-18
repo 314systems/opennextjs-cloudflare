@@ -86,7 +86,7 @@ function initRuntime() {
 				// https://github.com/cloudflare/workerd/issues/2746
 				// https://github.com/cloudflare/workerd/issues/3245
 				Object.defineProperty(init, "body", {
-					// @ts-ignore
+					// @ts-expect-error - incorrect type from lib.dom.d.ts
 					value: init.body instanceof stream.Readable ? ReadableStream.from(init.body) : init.body,
 				});
 			}

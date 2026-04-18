@@ -87,11 +87,11 @@ describe("getCacheAssets", () => {
 });
 
 vi.mock("./utils/run-wrangler.js", () => ({
-	runWrangler: vi.fn(async () => ({ success: true, stdout: "", stderr: "" })),
+	runWrangler: vi.fn(() => ({ success: true, stdout: "", stderr: "" })),
 }));
 
 vi.mock("./utils/helpers.js", () => ({
-	getEnvFromPlatformProxy: vi.fn(async () => ({})),
+	getEnvFromPlatformProxy: vi.fn(() => ({})),
 	quoteShellMeta: vi.fn((s) => s),
 }));
 

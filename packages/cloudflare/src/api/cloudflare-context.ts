@@ -88,7 +88,7 @@ declare global {
 	}
 }
 
-export type CloudflareContext = {
+export interface CloudflareContext {
 	/**
 	 * the worker's [bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/)
 	 */
@@ -101,7 +101,7 @@ export type CloudflareContext = {
 	 * the current [execution context](https://developers.cloudflare.com/workers/runtime-apis/context)
 	 */
 	ctx: ExecutionContext;
-};
+}
 
 /**
  * Symbol used as an index in the global scope to set and retrieve the Cloudflare context
@@ -120,13 +120,13 @@ type InternalGlobalThis = typeof globalThis & {
 	__NEXT_DATA__: Record<string, unknown>;
 };
 
-type GetCloudflareContextOptions = {
+interface GetCloudflareContextOptions {
 	/**
 	 * When `true`, `getCloudflareContext` returns a promise of the cloudflare context instead of the context,
 	 * this is needed to access the context from statically generated routes.
 	 */
 	async: boolean;
-};
+}
 
 /**
  * Utility to get the current Cloudflare context
@@ -154,7 +154,7 @@ function inSSG(): boolean {
 	const global = globalThis as InternalGlobalThis;
 	// Note: Next.js sets globalThis.__NEXT_DATA__.nextExport to true for SSG routes
 	// source: https://github.com/vercel/next.js/blob/4e394608423/packages/next/src/export/worker.ts#L55-L57)
-	return global.__NEXT_DATA__?.nextExport === true;
+	return global.__NEXT_DATA__.nextExport === true;
 }
 
 /**
@@ -246,7 +246,7 @@ export async function initOpenNextCloudflareForDev(options?: GetPlatformProxyOpt
 function shouldContextInitializationRun(): boolean {
 	// via debugging we've seen that AsyncLocalStorage is only set in one of the
 	// two processes so we're using it as the differentiator between the two
-	const AsyncLocalStorage = (globalThis as unknown as { AsyncLocalStorage?: unknown })["AsyncLocalStorage"];
+	const AsyncLocalStorage = (globalThis as unknown as { AsyncLocalStorage?: unknown }).AsyncLocalStorage;
 	return !!AsyncLocalStorage;
 }
 
@@ -273,7 +273,7 @@ function addCloudflareContextToNodejsGlobal(cloudflareContext: CloudflareContext
  */
 async function monkeyPatchVmModuleEdgeContext(cloudflareContext: CloudflareContext) {
 	const require = (
-		await import(/* webpackIgnore: true */ `${"__module".replaceAll("_", "")}`)
+		await import(/* webpackIgnore: true */ "__module".replaceAll("_", ""))
 	).default.createRequire(import.meta.url);
 
 	// eslint-disable-next-line unicorn/prefer-node-protocol -- the `next dev` compiler doesn't accept the node prefix
@@ -308,7 +308,7 @@ function isWranglerModule(
  */
 async function getCloudflareContextFromWrangler(options?: GetPlatformProxyOptions) {
 	// Note: we never want wrangler to be bundled in the Next.js app, that's why the import below looks like it does
-	const mod = await import(/* webpackIgnore: true */ `${"__wrangler".replaceAll("_", "")}`);
+	const mod = await import(/* webpackIgnore: true */ "__wrangler".replaceAll("_", ""));
 	if (!isWranglerModule(mod)) {
 		throw new Error("Failed to load wrangler module");
 	}

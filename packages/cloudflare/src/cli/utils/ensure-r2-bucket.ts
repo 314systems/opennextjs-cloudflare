@@ -68,7 +68,7 @@ async function getAuthCredentials(options: PackagerDetails): Promise<AuthCredent
  */
 async function getAccountId(client: Cloudflare): Promise<string | undefined> {
 	if (process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID) {
-		return process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID;
+		return process.env.CLOUDFLARE_ACCOUNT_ID ?? process.env.CF_ACCOUNT_ID;
 	}
 
 	try {

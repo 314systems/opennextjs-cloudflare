@@ -9,7 +9,10 @@ import { globSync } from "glob";
 
 import { patchVercelOgFallbackFont, patchVercelOgImport } from "./vercel-og.js";
 
-type TraceInfo = { version: number; files: string[] };
+interface TraceInfo {
+	version: number;
+	files: string[];
+}
 
 /**
  * Patches the usage of @vercel/og to be compatible with Cloudflare Workers.
@@ -66,7 +69,10 @@ export async function patchVercelOgLibrary(buildOpts: BuildOptions): Promise<boo
 			await writeFile(outputEdgePath, ast.commitEdits(edits));
 
 			if (matches.length > 0) {
-				const fontFileName = matches[0]!.getMatch("PATH")!.text();
+				const fontFileName = matches[0]?.getMatch("PATH")?.text();
+				if (!fontFileName) {
+					throw new Error("Failed to find font file name in the @vercel/og library");
+				}
 				await rename(path.join(outputDir, fontFileName), path.join(outputDir, `${fontFileName}.bin`));
 			}
 		}

@@ -26,6 +26,7 @@ export async function previewCommand(
 	const { config } = await retrieveCompiledConfig();
 	const buildOpts = getNormalizedOptions(config);
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const wranglerConfig = await readWranglerConfig(args);
 	const envVars = await getEnvFromPlatformProxy(
 		{
@@ -38,6 +39,7 @@ export async function previewCommand(
 	await populateCache(
 		buildOpts,
 		config,
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		wranglerConfig,
 		{
 			target: args.remote ? "remote" : "local",

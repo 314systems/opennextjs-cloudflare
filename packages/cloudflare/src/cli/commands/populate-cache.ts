@@ -70,6 +70,7 @@ async function populateCacheCommand(
 	const { config } = await retrieveCompiledConfig();
 	const buildOpts = getNormalizedOptions(config);
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 	const wranglerConfig = await readWranglerConfig(args);
 	const envVars = await getEnvFromPlatformProxy(
 		{
@@ -82,6 +83,7 @@ async function populateCacheCommand(
 	await populateCache(
 		buildOpts,
 		config,
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
 		wranglerConfig,
 		{
 			target,
@@ -146,7 +148,12 @@ async function resolveCacheName(
 	return typeof value === "function" ? (await value()).name : value;
 }
 
-export type CacheAsset = { isFetch: boolean; fullPath: string; key: string; buildId: string };
+export interface CacheAsset {
+	isFetch: boolean;
+	fullPath: string;
+	key: string;
+	buildId: string;
+}
 
 export function getCacheAssets(opts: BuildOptions): CacheAsset[] {
 	const allFiles = globSync(path.join(opts.outputDir, "cache/**/*"), {
@@ -193,7 +200,7 @@ export function getCacheAssets(opts: BuildOptions): CacheAsset[] {
 	return assets;
 }
 
-export type PopulateCacheOptions = {
+export interface PopulateCacheOptions {
 	/**
 	 * Whether to populate the local or remote cache.
 	 */
@@ -218,7 +225,7 @@ export type PopulateCacheOptions = {
 	 * Instructs Wrangler to use the preview namespace or ID defined in the Wrangler config for the remote target.
 	 */
 	shouldUsePreviewId: boolean;
-};
+}
 
 /**
  * Populates the R2 incremental cache by starting a worker with an R2 binding.
@@ -318,7 +325,7 @@ async function populateR2IncrementalCache(
 		await worker.dispose();
 	}
 
-	logger.info(`Successfully populated cache with ${assets.length} entries`);
+	logger.info(`Successfully populated cache with ${String(assets.length)} entries`);
 }
 
 /**
@@ -444,12 +451,12 @@ async function sendEntryToR2Worker(options: {
 
 				if (response.status >= 500) {
 					throw new RetryableWorkerError(
-						`Worker returned a ${response.status} ${response.statusText} response`,
+						`Worker returned a ${String(response.status)} ${response.statusText} response`,
 						{ cause: e }
 					);
 				}
 
-				throw new Error(`Unexpected ${response.status} response from R2 worker: ${body}`, {
+				throw new Error(`Unexpected ${String(response.status)} response from R2 worker: ${body}`, {
 					cause: e,
 				});
 			}
@@ -466,13 +473,13 @@ async function sendEntryToR2Worker(options: {
 		} catch (e) {
 			if (e instanceof RetryableWorkerError && attempt < CLIENT_RETRY_ATTEMPTS - 1) {
 				logger.debug(
-					`Attempt ${attempt + 1} to write "${key}" failed with a retryable error: ${e.message}. Retrying...`
+					`Attempt ${String(attempt + 1)} to write "${key}" failed with a retryable error: ${e.message}. Retrying...`
 				);
 				await setTimeout(CLIENT_RETRY_BASE_DELAY_MS * Math.pow(2, attempt));
 				continue;
 			}
 
-			throw new Error(`Failed to write "${key}" to R2 after ${CLIENT_RETRY_ATTEMPTS} attempts`, {
+			throw new Error(`Failed to write "${key}" to R2 after ${String(CLIENT_RETRY_ATTEMPTS)} attempts`, {
 				cause: e,
 			});
 		}
@@ -506,7 +513,7 @@ async function populateKVIncrementalCache(
 	const totalChunks = Math.ceil(assets.length / chunkSize);
 
 	logger.info(
-		`Inserting ${assets.length} assets to ${populateCacheOptions.target} KV in chunks of ${chunkSize}`
+		`Inserting ${String(assets.length)} assets to ${populateCacheOptions.target} KV in chunks of ${String(chunkSize)}`
 	);
 
 	const tempDir = await mkdtemp(path.join(os.tmpdir(), "open-next-"));
@@ -522,7 +529,7 @@ async function populateKVIncrementalCache(
 					buildId,
 					cacheType: isFetch ? "fetch" : "cache",
 				}),
-				value: (await readFile(fullPath, "utf8")).toString(),
+				value: await readFile(fullPath, "utf8"),
 			}));
 
 		await writeFile(chunkPath, JSON.stringify(kvMapping));
@@ -533,7 +540,7 @@ async function populateKVIncrementalCache(
 				"kv bulk put",
 				quoteShellMeta(chunkPath),
 				`--binding ${KV_CACHE_BINDING_NAME}`,
-				`--preview ${populateCacheOptions.shouldUsePreviewId}`,
+				`--preview ${String(populateCacheOptions.shouldUsePreviewId)}`,
 			],
 			{
 				target: populateCacheOptions.target,
@@ -582,10 +589,10 @@ async function populateD1TagCache(
 			//   stale         - Timestamp (ms) when the cached entry becomes stale. Added in v1.19.
 			//   expire        - Timestamp (ms) when the cached entry expires. NULL means no expire. Added in v1.19.
 			`--command "CREATE TABLE IF NOT EXISTS revalidations (tag TEXT NOT NULL, revalidatedAt INTEGER NOT NULL, stale INTEGER, expire INTEGER default NULL, UNIQUE(tag) ON CONFLICT REPLACE);"`,
-			`--preview ${populateCacheOptions.shouldUsePreviewId}`,
+			`--preview ${String(populateCacheOptions.shouldUsePreviewId)}`,
 		],
 		{
-			...(populateCacheOptions.target === undefined ? {} : { target: populateCacheOptions.target }),
+			target: populateCacheOptions.target,
 			...(populateCacheOptions.environment !== undefined
 				? { environment: populateCacheOptions.environment }
 				: {}),
@@ -609,10 +616,10 @@ async function populateD1TagCache(
 			"d1 execute",
 			D1_TAG_BINDING_NAME,
 			`--command "ALTER TABLE revalidations ADD COLUMN stale INTEGER; ALTER TABLE revalidations ADD COLUMN expire INTEGER default NULL"`,
-			`--preview ${populateCacheOptions.shouldUsePreviewId}`,
+			`--preview ${String(populateCacheOptions.shouldUsePreviewId)}`,
 		],
 		{
-			...(populateCacheOptions.target === undefined ? {} : { target: populateCacheOptions.target }),
+			target: populateCacheOptions.target,
 			...(populateCacheOptions.environment !== undefined
 				? { environment: populateCacheOptions.environment }
 				: {}),

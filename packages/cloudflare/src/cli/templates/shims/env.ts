@@ -1,1 +1,3 @@
-export function loadEnvConfig(): void {}
+export function loadEnvConfig(): void {
+	/* empty */
+}
