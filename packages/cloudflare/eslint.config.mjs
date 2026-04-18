@@ -5,6 +5,7 @@ import simpleImportSort from "eslint-plugin-simple-import-sort";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import vitest from "@vitest/eslint-plugin";
 
 export default defineConfig([
 	globalIgnores([
@@ -50,4 +51,14 @@ export default defineConfig([
 			"import/extensions": ["error", "always", { checkTypeImports: true }],
 		},
 	},
+	{
+		files: ["**/*.spec.ts"],
+		plugins: {
+			vitest,
+		},
+		rules: {
+			...vitest.configs.recommended.rules,
+			'vitest/max-nested-describe': ['error', { max: 3 }],
+		},
+	}
 ]);

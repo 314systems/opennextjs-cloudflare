@@ -70,6 +70,7 @@
 		"@types/picomatch": "^4.0.0",
 		"@types/yargs": "catalog:",
 		"@vitest/coverage-v8": "^4.1.4",
+		"@vitest/eslint-plugin": "^1.6.16",
 		"diff": "^9.0.0",
 		"esbuild": "catalog:",
 		"eslint": "catalog:",
