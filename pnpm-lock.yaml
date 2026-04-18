@@ -996,9 +996,6 @@ importers:
 
   packages/cloudflare:
     dependencies:
-      '@ast-grep/napi':
-        specifier: ^0.40.5
-        version: 0.40.5
       '@dotenvx/dotenvx':
         specifier: 'catalog:'
         version: 1.61.0
