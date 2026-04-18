@@ -1,5 +1,5 @@
 import pluginJs from "@eslint/js";
-import { defineConfig } from "eslint/config";
+import { defineConfig, globalIgnores } from "eslint/config";
 import importPlugin from "eslint-plugin-import";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import eslintPluginUnicorn from "eslint-plugin-unicorn";
@@ -7,12 +7,11 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default defineConfig([
-	{
-		ignores: ["dist", "**/test-snapshots", "**/test-fixtures"],
-	},
-	{
-		files: ["**/*.{js,mjs,cjs,ts}"],
-	},
+	globalIgnores([
+		"**/dist/**",
+		"**/test-snapshots/**",
+		"**/test-fixtures/**",
+	]),
 	{
 		languageOptions: {
 			globals: globals.node,
