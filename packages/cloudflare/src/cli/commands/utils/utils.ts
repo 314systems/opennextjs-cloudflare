@@ -126,10 +126,11 @@ export function getNormalizedOptions(
 export async function readWranglerConfig(
 	args: WithWranglerArgs
 ): Promise<ReturnType<typeof unstable_readConfig>> {
+	const { env, wranglerConfigPath } = args;
 	// Note: `unstable_readConfig` is sync as of wrangler 4.60.0
 	//       But it will eventually become async.
 	//       See https://github.com/cloudflare/workers-sdk/pull/12031
-	return await unstable_readConfig({ env: args.env, config: args.wranglerConfigPath });
+	return await unstable_readConfig({ env, config: wranglerConfigPath });
 }
 
 /**
@@ -160,12 +161,12 @@ export function withWranglerOptions<T>(args: Argv<T>): Argv<
 		});
 }
 
-type WranglerInputArgs = {
+interface WranglerInputArgs {
 	configPath?: string | undefined;
 	config?: string | undefined;
 	env?: string | undefined;
 	remote?: boolean | undefined;
-};
+}
 
 function asString(value: unknown): string | undefined {
 	return typeof value === "string" ? value : undefined;
@@ -219,7 +220,7 @@ function getWranglerArgs(
 		...(env ? ["--env", env] : []),
 		...(remote ? ["--remote"] : []),
 		// Note: the `args` array contains unrecognised flags.
-		...(args.args?.map((a) => `${a}`) ?? []),
+		...(args.args?.map((a) => String(a)) ?? []),
 	];
 }
 

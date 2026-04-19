@@ -189,7 +189,7 @@ function discoverExternalSubpaths(mappings: Map<string, string>, tracedFiles: st
 		// "shiki-43d062b67f27bbdc/wasm" or "shiki-43d062b67f27bbdc/engine/javascript".
 		// The hashedName is escaped to safely use it as a literal in the regex pattern.
 		const escaped = getCrossPlatformPathRegex(hashedName, { escape: true });
-		const pattern = new RegExp(`"(${escaped}/[^"]*)"`, "g");
+		const pattern = new RegExp(`"(${String(escaped)}/[^"]*)"`, "g");
 
 		for (const filePath of externalChunks) {
 			try {
