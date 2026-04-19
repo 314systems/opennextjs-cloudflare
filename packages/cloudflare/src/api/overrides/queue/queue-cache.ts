@@ -57,9 +57,7 @@ class QueueCache implements Queue {
 	}
 
 	private async getCache() {
-		if (!this.cache) {
-			this.cache = await caches.open("durable-queue");
-		}
+		this.cache ??= await caches.open("durable-queue");
 		return this.cache;
 	}
 

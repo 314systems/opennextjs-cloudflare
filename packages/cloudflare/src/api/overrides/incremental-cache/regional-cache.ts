@@ -201,7 +201,7 @@ class RegionalCache implements IncrementalCache {
 		const age =
 			this.opts.mode === "short-lived"
 				? ONE_MINUTE_IN_SECONDS
-				: entry.value.revalidate || this.opts.defaultLongLivedTtlSec || THIRTY_MINUTES_IN_SECONDS;
+				: (entry.value.revalidate ?? this.opts.defaultLongLivedTtlSec ?? THIRTY_MINUTES_IN_SECONDS);
 
 		// We default to the entry key if no tags are found.
 		// so that we can also revalidate page router based entry this way.
