@@ -57,17 +57,18 @@ export async function handleImageRequest(
 			throw new Error("Failed to fetch image", { cause: e });
 		}
 		if (!fetchImageResult.ok) {
-			if (fetchImageResult.error === "timed_out") {
-				return new Response('"url" parameter is valid but upstream response timed out', {
-					status: 504,
-				});
+			switch (fetchImageResult.error) {
+				case "timed_out":
+					return new Response('"url" parameter is valid but upstream response timed out', {
+						status: 504,
+					});
+				case "too_many_redirects":
+					return new Response('"url" parameter is valid but upstream response is invalid', {
+						status: 508,
+					});
+				default:
+					throw new Error("Failed to fetch image");
 			}
-			if (fetchImageResult.error === "too_many_redirects") {
-				return new Response('"url" parameter is valid but upstream response is invalid', {
-					status: 508,
-				});
-			}
-			throw new Error("Failed to fetch image");
 		}
 		imageResponse = fetchImageResult.response;
 	}
@@ -733,7 +734,7 @@ export function matchRemotePattern(pattern: RemotePattern, url: URL): boolean {
 		return false;
 	}
 
-	if (pattern.hostname === undefined || !new RegExp(pattern.hostname).test(url.hostname)) {
+	if (!new RegExp(pattern.hostname).test(url.hostname)) {
 		return false;
 	}
 

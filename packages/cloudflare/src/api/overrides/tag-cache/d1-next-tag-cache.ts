@@ -157,9 +157,9 @@ export class D1NextModeTagCache implements NextModeTagCache {
 				const row = rowsByKey.get(this.getCacheKey(tag));
 				const value: D1TagValue | null = row
 					? {
-							revalidatedAt: (row[1] as number) ?? 0,
-							stale: (row[2] as number) ?? null,
-							expire: (row[3] as number) ?? null,
+							revalidatedAt: (row[1] ?? 0) as number,
+							stale: (row[2] ?? null) as number | null,
+							expire: (row[3] ?? null) as number | null,
 						}
 					: null;
 				itemsCache?.set(tag, value);
