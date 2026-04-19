@@ -4,28 +4,28 @@ import path from "node:path";
 
 import { compareSemver } from "@opennextjs/aws/build/helper.js";
 
-export type PackagerDetails = {
+export interface PackagerDetails {
 	/** The name of the package manager. */
 	packager: "npm" | "pnpm" | "yarn" | "bun";
 	/** The root directory of the monorepo, used to locate package.json. */
 	monorepoRoot: string;
-};
+}
 
 export type WranglerTarget = "local" | "remote";
 
-export type WranglerCommandResult = {
+export interface WranglerCommandResult {
 	success: boolean;
 	stdout: string;
 	stderr: string;
-};
+}
 
-type WranglerOptions = {
+interface WranglerOptions {
 	target?: WranglerTarget;
 	environment?: string;
 	configPath?: string;
 	logging?: "all" | "error" | "none";
 	env?: Record<string, string>;
-};
+}
 
 /**
  * Checks the package.json `packageManager` field to determine whether yarn modern is used.

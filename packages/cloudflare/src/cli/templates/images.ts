@@ -1,19 +1,19 @@
 import { error, warn } from "@opennextjs/aws/adapters/logger.js";
 
-export type RemotePattern = {
+export interface RemotePattern {
 	protocol?: "http" | "https";
 	hostname: string;
 	port?: string;
 	// pathname is always set in the manifest (to `makeRe(pathname ?? '**', { dot: true }).source`)
 	pathname: string;
 	search?: string;
-};
+}
 
-export type LocalPattern = {
+export interface LocalPattern {
 	// pathname is always set in the manifest
 	pathname: string;
 	search?: string;
-};
+}
 
 /**
  * Handles requests to /_next/image(/), including image optimizations.
@@ -370,15 +370,15 @@ async function fetchWithRedirects(
 
 type FetchWithRedirectsResult = FetchWithRedirectsSuccessResult | FetchWithRedirectsErrorResult;
 
-type FetchWithRedirectsSuccessResult = {
+interface FetchWithRedirectsSuccessResult {
 	ok: true;
 	response: Response;
-};
+}
 
-type FetchWithRedirectsErrorResult = {
+interface FetchWithRedirectsErrorResult {
 	ok: false;
 	error: FetchImageError;
-};
+}
 
 type FetchImageError = "timed_out" | "too_many_redirects";
 
@@ -403,9 +403,9 @@ function createImageResponse(
 	return response;
 }
 
-type ImageResponseFlags = {
+interface ImageResponseFlags {
 	immutable: boolean;
-};
+}
 
 /**
  * Parses the image request URL and headers.
@@ -458,7 +458,7 @@ function parseImageRequest(
 	return result;
 }
 
-type ParseImageRequestURLSuccessResult = {
+interface ParseImageRequestURLSuccessResult {
 	ok: true;
 	/** Absolute or relative URL. */
 	url: string;
@@ -466,14 +466,14 @@ type ParseImageRequestURLSuccessResult = {
 	quality: number;
 	format: OptimizedImageFormat | null;
 	static: boolean;
-};
+}
 
 export type OptimizedImageFormat = "image/avif" | "image/webp";
 
-type ErrorResult = {
+interface ErrorResult {
 	ok: false;
 	message: string;
-};
+}
 
 /**
  * Validates that there is exactly one "url" query parameter.
@@ -698,10 +698,10 @@ function parseRelativeURL(relativeURL: string): ParseRelativeURLResult {
 	return result;
 }
 
-type ParseRelativeURLResult = {
+interface ParseRelativeURLResult {
 	pathname: string;
 	search: string;
-};
+}
 
 export function matchLocalPattern(pattern: LocalPattern, url: { pathname: string; search: string }): boolean {
 	if (pattern.search !== undefined && pattern.search !== url.search) {

@@ -88,10 +88,10 @@ declare global {
 	}
 }
 
-export type CloudflareContext<
+export interface CloudflareContext<
 	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
 	Context = ExecutionContext,
-> = {
+> {
 	/**
 	 * the worker's [bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/)
 	 */
@@ -104,7 +104,7 @@ export type CloudflareContext<
 	 * the current [execution context](https://developers.cloudflare.com/workers/runtime-apis/context)
 	 */
 	ctx: Context;
-};
+}
 
 /**
  * Symbol used as an index in the global scope to set and retrieve the Cloudflare context
@@ -126,13 +126,13 @@ type InternalGlobalThis<
 	__NEXT_DATA__: Record<string, unknown>;
 };
 
-type GetCloudflareContextOptions = {
+interface GetCloudflareContextOptions {
 	/**
 	 * When `true`, `getCloudflareContext` returns a promise of the cloudflare context instead of the context,
 	 * this is needed to access the context from statically generated routes.
 	 */
 	async: boolean;
-};
+}
 
 /**
  * Utility to get the current Cloudflare context

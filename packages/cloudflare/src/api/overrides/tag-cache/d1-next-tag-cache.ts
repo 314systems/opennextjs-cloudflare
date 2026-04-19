@@ -15,7 +15,11 @@ export const BINDING_NAME = "NEXT_TAG_CACHE_D1";
  * - stale: timestamp in ms when the tag becomes stale
  * - expire: timestamp in ms when the tag expires (null means no expiry)
  */
-type D1TagValue = { revalidatedAt: number; stale: number | null; expire: number | null };
+interface D1TagValue {
+	revalidatedAt: number;
+	stale: number | null;
+	expire: number | null;
+}
 
 export class D1NextModeTagCache implements NextModeTagCache {
 	readonly mode = "nextMode" as const;

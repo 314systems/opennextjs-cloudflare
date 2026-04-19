@@ -12,7 +12,7 @@ import { debugCache, FALLBACK_BUILD_ID, IncrementalCacheEntry, isPurgeCacheEnabl
 const ONE_MINUTE_IN_SECONDS = 60;
 const THIRTY_MINUTES_IN_SECONDS = ONE_MINUTE_IN_SECONDS * 30;
 
-type Options = {
+interface Options {
 	/**
 	 * The mode to use for the regional cache.
 	 *
@@ -48,7 +48,7 @@ type Options = {
 	 * @default `true` if the auto cache purging is enabled, `false` otherwise.
 	 */
 	bypassTagCacheOnCacheHit?: boolean;
-};
+}
 
 interface PutToCacheInput {
 	key: string;

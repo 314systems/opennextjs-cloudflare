@@ -21,7 +21,7 @@ export type Override<T extends BaseOverride> = "dummy" | T | LazyLoadedOverride<
  *
  * See the [Caching documentation](https://opennext.js.org/cloudflare/caching))
  */
-export type CloudflareOverrides = {
+export interface CloudflareOverrides {
 	/**
 	 * Sets the incremental cache implementation.
 	 */
@@ -55,7 +55,7 @@ export type CloudflareOverrides = {
 	 * @default "none"
 	 */
 	routePreloadingBehavior?: RoutePreloadingBehavior;
-};
+}
 
 /**
  * Defines the OpenNext configuration that targets the Cloudflare adapter

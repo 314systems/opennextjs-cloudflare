@@ -2,14 +2,14 @@ import { DurableObject } from "cloudflare:workers";
 
 import { debugCache } from "../overrides/internal.js";
 
-export type TagData = {
+export interface TagData {
 	// Timestamp (ms) when the tag was last revalidated.
 	revalidatedAt: number;
 	// Timestamp (ms) when the cached entry becomes stale. `null` means it never becomes stale.
 	stale: number | null;
 	// Timestamp (ms) when the cached entry expires. `null` means it never expires.
 	expire: number | null;
-};
+}
 
 export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 	sql: SqlStorage;

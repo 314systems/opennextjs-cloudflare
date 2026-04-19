@@ -8,7 +8,10 @@ import { globSync } from "glob";
 
 import { patchVercelOgFallbackFont, patchVercelOgImport } from "./vercel-og.js";
 
-type TraceInfo = { version: number; files: string[] };
+interface TraceInfo {
+	version: number;
+	files: string[];
+}
 
 /**
  * Patches the usage of @vercel/og to be compatible with Cloudflare Workers.

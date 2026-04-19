@@ -146,7 +146,12 @@ async function resolveCacheName(
 	return typeof value === "function" ? (await value()).name : value;
 }
 
-export type CacheAsset = { isFetch: boolean; fullPath: string; key: string; buildId: string };
+export interface CacheAsset {
+	isFetch: boolean;
+	fullPath: string;
+	key: string;
+	buildId: string;
+}
 
 export function getCacheAssets(opts: BuildOptions): CacheAsset[] {
 	const allFiles = globSync(path.join(opts.outputDir, "cache/**/*"), {
@@ -193,7 +198,7 @@ export function getCacheAssets(opts: BuildOptions): CacheAsset[] {
 	return assets;
 }
 
-export type PopulateCacheOptions = {
+export interface PopulateCacheOptions {
 	/**
 	 * Whether to populate the local or remote cache.
 	 */
@@ -218,7 +223,7 @@ export type PopulateCacheOptions = {
 	 * Instructs Wrangler to use the preview namespace or ID defined in the Wrangler config for the remote target.
 	 */
 	shouldUsePreviewId: boolean;
-};
+}
 
 /**
  * Populates the R2 incremental cache by starting a worker with an R2 binding.

@@ -9,7 +9,11 @@ import type { TagData } from "../../durable-objects/sharded-tag-cache.js";
 import { DOShardedTagCache } from "../../durable-objects/sharded-tag-cache.js";
 import { debugCache, isPurgeCacheEnabled, purgeCacheByTags } from "../internal.js";
 
-type NormalizedTagInput = { tag: string; stale?: number; expire?: number | null };
+interface NormalizedTagInput {
+	tag: string;
+	stale?: number;
+	expire?: number | null;
+}
 type CachedTagValue = { tag: string } & TagData;
 
 export const DEFAULT_WRITE_RETRIES = 3;
