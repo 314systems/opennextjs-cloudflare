@@ -170,10 +170,7 @@ function getCloudflareContextFromGlobalScope<
 /**
  * Detects whether the current code is being evaluated in a statically generated route
  */
-function inSSG<
-	CfProperties extends Record<string, unknown> = IncomingRequestCfProperties,
-	Context = ExecutionContext,
->(): boolean {
+function inSSG(): boolean {
 	const global = globalThis as InternalGlobalThis<CfProperties, Context>;
 	// Note: Next.js sets globalThis.__NEXT_DATA__.nextExport to true for SSG routes
 	// source: https://github.com/vercel/next.js/blob/4e394608423/packages/next/src/export/worker.ts#L55-L57)
