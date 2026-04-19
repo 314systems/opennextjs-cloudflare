@@ -305,7 +305,7 @@ function addCloudflareContextToNodejsGlobal<
  */
 async function monkeyPatchVmModuleEdgeContext(cloudflareContext: CloudflareContext<CfProperties, Context>) {
 	const require = (
-		await import(/* webpackIgnore: true */ `${"__module".replaceAll("_", "")}`)
+		await import(/* webpackIgnore: true */ "__module".replaceAll("_", ""))
 	).default.createRequire(import.meta.url);
 
 	// eslint-disable-next-line unicorn/prefer-node-protocol -- the `next dev` compiler doesn't accept the node prefix
@@ -337,7 +337,7 @@ async function getCloudflareContextFromWrangler<
 	Context = ExecutionContext,
 >(options?: GetPlatformProxyOptions): Promise<CloudflareContext<CfProperties, Context>> {
 	// Note: we never want wrangler to be bundled in the Next.js app, that's why the import below looks like it does
-	const { getPlatformProxy } = await import(/* webpackIgnore: true */ `${"__wrangler".replaceAll("_", "")}`);
+	const { getPlatformProxy } = await import(/* webpackIgnore: true */ "__wrangler".replaceAll("_", ""));
 
 	// This allows the selection of a wrangler environment while running in next dev mode
 	const environment = options?.environment ?? process.env.NEXT_DEV_WRANGLER_ENV;
