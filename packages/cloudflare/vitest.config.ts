@@ -34,6 +34,16 @@ export default defineConfig({
 						main: "./tests/fixtures/do-worker.ts",
 						miniflare: {
 							serviceBindings: {
+								ASSETS: (request) => {
+									const url = new URL(request.url);
+									if (url.pathname === "/missing.css") {
+										return new Response(null, { status: 404 });
+									}
+
+									return new Response(request.method === "HEAD" ? null : "asset", {
+										status: 200,
+									});
+								},
 								WORKER_SELF_REFERENCE: () =>
 									new Response(null, {
 										status: 200,
@@ -45,8 +55,9 @@ export default defineConfig({
 					}),
 				],
 				test: {
-					name: "cloudflare-do",
+					name: "cloudflare-integration",
 					include: [
+						"tests/api/overrides/asset-resolver/index.spec.ts",
 						"tests/api/durable-objects/bucket-cache-purge.spec.ts",
 						"tests/api/durable-objects/queue.spec.ts",
 						"tests/api/durable-objects/sharded-tag-cache.spec.ts",
