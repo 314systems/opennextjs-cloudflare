@@ -249,9 +249,8 @@ export function parseCdnCgiImageRequest(
 ): { ok: true; url: string; static: boolean } | ErrorResult {
 	const match = pathname.match(/^\/cdn-cgi\/image\/(?<options>[^/]+)\/(?<url>.+)$/);
 	if (
-		match === null ||
 		// Valid URLs have at least one option
-		!match.groups.options ||
+		!match?.groups?.options ||
 		!match.groups.url
 	) {
 		return { ok: false, message: "Invalid /cdn-cgi/image/ URL format" };

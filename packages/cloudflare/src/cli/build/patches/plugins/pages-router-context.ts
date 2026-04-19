@@ -24,7 +24,7 @@ export function patchPagesRouterContext(buildOpts: BuildOptions) {
 				{ filter: /.*shared-runtime/ },
 				async ({ path, resolveDir, ...options }): Promise<OnResolveResult | undefined> => {
 					const match = path.match(pathRegex);
-					if (match && match.groups?.CONTEXT) {
+					if (match?.groups?.CONTEXT) {
 						const newPath = `${basePath}${match.groups.CONTEXT}.js`;
 						return await build.resolve(newPath, {
 							resolveDir,
