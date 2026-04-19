@@ -10,6 +10,8 @@
 		"lint:check": "eslint",
 		"lint:fix": "eslint --cache --fix",
 		"ts:check": "tsc --noEmit",
+		"test:cf-types": "wrangler types tests/generated/worker-configuration.d.ts --config ./wrangler.jsonc",
+		"test:cf-types:check": "wrangler types tests/generated/worker-configuration.d.ts --config ./wrangler.jsonc --check",
 		"test": "vitest --run",
 		"test:watch": "vitest"
 	},

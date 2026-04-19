@@ -18,22 +18,22 @@ export class BucketCachePurge extends DurableObject<CloudflareEnv> {
 		// Initialize the sql table if it doesn't exist
 		state.blockConcurrencyWhile(async () => {
 			state.storage.sql.exec(`
-      CREATE TABLE IF NOT EXISTS cache_purge (
-        tag TEXT NOT NULL
-      );
-      CREATE UNIQUE INDEX IF NOT EXISTS tag_index ON cache_purge (tag);
-      `);
+                CREATE TABLE IF NOT EXISTS cache_purge (
+                    tag TEXT PRIMARY KEY
+                );
+			`);
 		});
 	}
 
 	async purgeCacheByTags(tags: string[]) {
 		for (const tag of tags) {
-			// Insert the tag into the sql table
 			this.ctx.storage.sql.exec(
 				`
-        INSERT OR REPLACE INTO cache_purge (tag)
-        VALUES (?)`,
-				[tag]
+                INSERT INTO cache_purge (tag)
+                VALUES (?)
+                ON CONFLICT(tag) DO NOTHING
+                `,
+				tag
 			);
 		}
 		const nextAlarm = await this.ctx.storage.getAlarm();
@@ -45,11 +45,7 @@ export class BucketCachePurge extends DurableObject<CloudflareEnv> {
 
 	override async alarm() {
 		let tags = this.ctx.storage.sql
-			.exec<{ tag: string }>(
-				`
-      SELECT * FROM cache_purge LIMIT ${MAX_NUMBER_OF_TAGS_PER_PURGE}
-    `
-			)
+			.exec<{ tag: string }>(`SELECT * FROM cache_purge LIMIT ${MAX_NUMBER_OF_TAGS_PER_PURGE}`)
 			.toArray();
 		do {
 			if (tags.length === 0) {
@@ -72,10 +68,10 @@ export class BucketCachePurge extends DurableObject<CloudflareEnv> {
 			// Delete the tags from the sql table
 			this.ctx.storage.sql.exec(
 				`
-        DELETE FROM cache_purge
-        WHERE tag IN (${tags.map(() => "?").join(",")})
-      `,
-				tags.map((row) => row.tag)
+                DELETE FROM cache_purge
+                WHERE tag IN (${tags.map(() => "?").join(",")})
+                `,
+				...tags.map((row) => row.tag)
 			);
 			if (tags.length < MAX_NUMBER_OF_TAGS_PER_PURGE) {
 				// If we have less than MAX_NUMBER_OF_TAGS_PER_PURGE tags, we can stop
@@ -83,11 +79,7 @@ export class BucketCachePurge extends DurableObject<CloudflareEnv> {
 			} else {
 				// Otherwise, we need to get the next 100 tags
 				tags = this.ctx.storage.sql
-					.exec<{ tag: string }>(
-						`
-          SELECT * FROM cache_purge LIMIT ${MAX_NUMBER_OF_TAGS_PER_PURGE}
-        `
-					)
+					.exec<{ tag: string }>(`SELECT * FROM cache_purge LIMIT ${MAX_NUMBER_OF_TAGS_PER_PURGE}`)
 					.toArray();
 			}
 		} while (tags.length >= 0);

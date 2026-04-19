@@ -1,0 +1,9 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"rootDir": "..",
+		"types": ["@opennextjs/aws/types/global.d.ts", "@cloudflare/vitest-pool-workers/types"],
+		"noEmit": true
+	},
+	"include": ["generated/worker-configuration.d.ts", "env.d.ts", "api/**/*.ts"]
+}
