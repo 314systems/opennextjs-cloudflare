@@ -1,11 +1,9 @@
-import { fetch, Headers, Request, Response, URL } from "@cloudflare/workers-types/experimental/index.js";
-
 /** Name of the env var containing the mapping */
 export const DEPLOYMENT_MAPPING_ENV_NAME = "CF_DEPLOYMENT_MAPPING";
 /** Version used for the latest worker */
 export const CURRENT_VERSION_ID = "current";
 
-let deploymentMapping: Record<string, string>;
+let deploymentMapping: Record<string, string> | undefined;
 
 /**
  * Routes the request to the requested deployment.
@@ -37,23 +35,25 @@ export async function maybeGetSkewProtectionResponse(request: Request): Promise<
 			return undefined;
 		}
 
-		const requestDeploymentId = request.headers.get("x-deployment-id") ?? url.searchParams.get("dpl");
+		const deploymentIdHeader: string | null = request.headers.get("x-deployment-id");
+		const requestDeploymentId = deploymentIdHeader ?? url.searchParams.get("dpl");
 
 		if (!requestDeploymentId || requestDeploymentId === process.env.DEPLOYMENT_ID) {
 			// The request does not specify a deployment id or it is the current deployment id
 			return undefined;
 		}
 
-		deploymentMapping ??= process.env[DEPLOYMENT_MAPPING_ENV_NAME]
-			? JSON.parse(process.env[DEPLOYMENT_MAPPING_ENV_NAME])
-			: {};
+		const deploymentMappingEnv = process.env[DEPLOYMENT_MAPPING_ENV_NAME];
+		const mapping = (deploymentMapping ??= deploymentMappingEnv
+			? (JSON.parse(deploymentMappingEnv) as unknown as Record<string, string>)
+			: {});
 
-		if (!(requestDeploymentId in deploymentMapping)) {
+		if (!(requestDeploymentId in mapping)) {
 			// Unknown deployment id, serve the current version
 			return undefined;
 		}
 
-		const version = deploymentMapping[requestDeploymentId];
+		const version = mapping[requestDeploymentId];
 
 		if (!version || version === CURRENT_VERSION_ID) {
 			return undefined;

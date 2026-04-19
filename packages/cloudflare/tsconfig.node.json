@@ -1,0 +1,12 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		// File Layout
+		"rootDir": "./src",
+		"outDir": "./dist",
+
+		"types": ["@cloudflare/workers-types", "@opennextjs/aws/types/global.d.ts", "node"]
+	},
+	"include": ["src/**/*.ts", "src/build-globals.d.ts", "env.d.ts"],
+	"exclude": ["node_modules", "dist", "src/cli/templates/**/*.ts", "src/**/*.spec.ts"]
+}

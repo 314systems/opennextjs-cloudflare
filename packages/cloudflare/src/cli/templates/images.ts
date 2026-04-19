@@ -62,11 +62,6 @@ export async function handleImageRequest(
 					status: 504,
 				});
 			}
-			if (fetchImageResult.error === "too_many_redirects") {
-				return new Response('"url" parameter is valid but upstream response is invalid', {
-					status: 508,
-				});
-			}
 			throw new Error("Failed to fetch image");
 		}
 		imageResponse = fetchImageResult.response;
@@ -287,9 +282,18 @@ export function parseCdnCgiImageRequest(
  */
 async function readImageHeader(
 	imageResponse: Response
-): Promise<{ contentType: ImageContentType | null; imageStream: ReadableStream } | Response> {
-	// Note: imageResponse.body is non-null — callers check before calling.
-	const [contentTypeStream, imageStream] = imageResponse.body!.tee();
+): Promise<{ contentType: ImageContentType | null; imageStream: ReadableStream<Uint8Array> } | Response> {
+	const body = imageResponse.body;
+	if (body === null) {
+		return new Response('"url" parameter is valid but upstream response is invalid', {
+			status: 400,
+		});
+	}
+
+	const [contentTypeStream, imageStream] = body.tee() as [
+		ReadableStream<Uint8Array>,
+		ReadableStream<Uint8Array>,
+	];
 	const headerBytes = new Uint8Array(32);
 	let bytesRead = 0;
 	const reader = contentTypeStream.getReader();
@@ -510,7 +514,10 @@ function validateUrlQueryParameter(requestURL: URL): ErrorResult | { url: string
 		return result;
 	}
 
-	const url = urls[0]!;
+	const url = urls[0];
+	if (url === undefined) {
+		throw new Error('Invariant: "url" parameter is missing after validation');
+	}
 
 	if (url.length > 3072) {
 		const result: ErrorResult = {
@@ -597,7 +604,10 @@ function validateWidthQueryParameter(requestURL: URL): ErrorResult | number {
 		};
 		return result;
 	}
-	const widthQueryValue = widthQueryValues[0]!;
+	const widthQueryValue = widthQueryValues[0];
+	if (widthQueryValue === undefined) {
+		throw new Error('Invariant: "w" parameter is missing after validation');
+	}
 	if (!/^[0-9]+$/.test(widthQueryValue)) {
 		const result: ErrorResult = {
 			ok: false,
@@ -647,7 +657,10 @@ function validateQualityQueryParameter(requestURL: URL): ErrorResult | number {
 		};
 		return result;
 	}
-	const qualityQueryValue = qualityQueryValues[0]!;
+	const qualityQueryValue = qualityQueryValues[0];
+	if (qualityQueryValue === undefined) {
+		throw new Error('Invariant: "q" parameter is missing after validation');
+	}
 	if (!/^[0-9]+$/.test(qualityQueryValue)) {
 		const result: ErrorResult = {
 			ok: false,
@@ -675,7 +688,7 @@ function validateQualityQueryParameter(requestURL: URL): ErrorResult | number {
 }
 
 function getPathnameFromRelativeURL(relativeURL: string): string {
-	return relativeURL.split("?")[0]!;
+	return relativeURL.split("?")[0] ?? "";
 }
 
 function hasLocalMatch(localPatterns: LocalPattern[], relativeURL: string): boolean {
@@ -698,7 +711,7 @@ function parseRelativeURL(relativeURL: string): ParseRelativeURLResult {
 		return result;
 	}
 	const parts = relativeURL.split("?");
-	const pathname = parts[0]!;
+	const pathname = parts[0] ?? "";
 	const search = "?" + parts.slice(1).join("?");
 	const result: ParseRelativeURLResult = {
 		pathname,

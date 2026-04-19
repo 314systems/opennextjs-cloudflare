@@ -7,17 +7,13 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import process from "node:process";
 import stream from "node:stream";
 
-import {
-	type ExecutionContext,
-	Request,
-	type RequestInfo,
-	type RequestInit,
-	Response,
-	URL,
-} from "@cloudflare/workers-types/experimental/index.js";
-
 // @ts-expect-error: resolved by wrangler build
 import * as nextEnvVars from "./next-env.mjs";
+
+const nextEnvVarsByMode = nextEnvVars as unknown as Record<
+	string,
+	Record<string, string | undefined> | undefined
+>;
 
 const cloudflareContextALS = new AsyncLocalStorage();
 
@@ -84,8 +80,10 @@ function initRuntime() {
 				// https://github.com/cloudflare/workerd/issues/2746
 				// https://github.com/cloudflare/workerd/issues/3245
 				Object.defineProperty(init, "body", {
-					// @ts-expect-error - incorrect type from lib.dom.d.ts
-					value: init.body instanceof stream.Readable ? ReadableStream.from(init.body) : init.body,
+					value:
+						init.body instanceof stream.Readable
+							? (ReadableStream as unknown as { from(body: unknown): ReadableStream }).from(init.body)
+							: init.body,
 				});
 			}
 			super(input, init);
@@ -119,9 +117,10 @@ function populateProcessEnv(url: URL, env: CloudflareEnv) {
 	}
 
 	const mode = env.NEXTJS_ENV ?? "production";
-	if (nextEnvVars[mode]) {
-		for (const key in nextEnvVars[mode]) {
-			process.env[key] ??= nextEnvVars[mode][key];
+	const envVars = nextEnvVarsByMode[mode];
+	if (envVars) {
+		for (const key in envVars) {
+			process.env[key] ??= envVars[key];
 		}
 	}
 

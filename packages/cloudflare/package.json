@@ -5,11 +5,11 @@
 	"type": "module",
 	"scripts": {
 		"clean": "rimraf dist",
-		"build": "pnpm clean && tsc",
-		"build:watch": "tsc -w",
+		"build": "pnpm clean && tsc -p tsconfig.node.json && tsc -p tsconfig.worker.json",
+		"build:watch": "tsc -p tsconfig.node.json -w",
 		"lint:check": "eslint",
 		"lint:fix": "eslint --cache --fix",
-		"ts:check": "tsc --noEmit",
+		"ts:check": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.worker.json --noEmit && tsc -p tsconfig.test.json --noEmit && tsc -p tsconfig.worker-test.json --noEmit",
 		"test": "vitest --run",
 		"test:watch": "vitest"
 	},

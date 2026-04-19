@@ -1,0 +1,12 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		// File Layout
+		"rootDir": "./src/cli/templates",
+		"outDir": "./dist/cli/templates",
+
+		"types": ["@cloudflare/workers-types/experimental"]
+	},
+	"include": ["src/cli/templates/**/*.ts", "src/cli/templates/**/*.d.ts"],
+	"exclude": ["node_modules", "dist", "src/**/*.spec.ts"]
+}

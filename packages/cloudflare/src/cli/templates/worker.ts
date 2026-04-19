@@ -1,7 +1,4 @@
-import {
-	type ExportedHandler,
-	Response,
-} from "@cloudflare/workers-types/experimental/index.js";
+import type { ExportedHandler } from "@cloudflare/workers-types/experimental/index.js";
 
 import { handleCdnCgiImageRequest, handleImageRequest } from "./cloudflare/images.js";
 import { runWithCloudflareRequestContext } from "./cloudflare/init.js";
@@ -39,6 +36,7 @@ const worker: ExportedHandler<CloudflareEnv> = {
 			}
 
 			// - `Request`s are handled by the Next server
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 			const reqOrResp = await middlewareHandler(request, env, ctx);
 
 			if (reqOrResp instanceof Response) {
@@ -46,8 +44,10 @@ const worker: ExportedHandler<CloudflareEnv> = {
 			}
 
 			// @ts-expect-error: resolved by wrangler build
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 			const { handler } = await import("./server-functions/default/handler.mjs");
 
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
 			return handler(reqOrResp, env, ctx, request.signal);
 		});
 	},

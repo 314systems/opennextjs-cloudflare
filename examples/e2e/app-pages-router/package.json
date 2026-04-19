@@ -25,7 +25,7 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "catalog:",
-		"@types/node": "catalog:e2e",
+		"@types/node": "catalog:",
 		"@types/react": "catalog:e2e",
 		"@types/react-dom": "catalog:e2e",
 		"autoprefixer": "catalog:e2e",

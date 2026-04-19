@@ -43,10 +43,10 @@ const resolver: AssetResolver = {
 		return {
 			type: "core",
 			statusCode: response.status,
-			// @ts-expect-error - The `headers` type in the Cloudflare Workers API is not compatible with the standard `Headers` type, so we need to convert it to a plain object.
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
 			headers: Object.fromEntries(response.headers.entries()),
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			body: getResponseBody(method, response) as any,
+			// @ts-expect-error: Cloudflare Headers type is not compatible with the standard Headers type
+			body: getResponseBody(method, response),
 			isBase64Encoded: false,
 		} satisfies InternalResult;
 	},
@@ -62,14 +62,12 @@ const resolver: AssetResolver = {
  * @param response - The response from the ASSETS binding.
  * @returns The body to use in the internal result.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getResponseBody(method: string, response: Response): ReadableStream<any> | null {
+function getResponseBody(method: string, response: Response): ReadableStream | null {
 	if (method === "HEAD") {
 		return null;
 	}
 	// Workers and Node ReadableStream types differ.
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return response.body || (new ReadableStream() as any);
+	return response.body;
 }
 
 /**
