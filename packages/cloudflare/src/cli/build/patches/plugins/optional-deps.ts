@@ -9,12 +9,22 @@
  * The plugin uses ESBuild built-in resolution to check if the dependency is installed.
  */
 
-import type { OnResolveResult, PluginBuild } from "esbuild";
+import type { OnResolveResult, Plugin, PluginBuild } from "esbuild";
 
-export function handleOptionalDependencies(dependencies: string[]): {
+interface MissingDependencyPluginData {
 	name: string;
-	setup: (build: PluginBuild) => Promise<void>;
-} {
+}
+
+function isMissingDependencyPluginData(pluginData: unknown): pluginData is MissingDependencyPluginData {
+	return (
+		typeof pluginData === "object" &&
+		pluginData !== null &&
+		"name" in pluginData &&
+		typeof pluginData.name === "string"
+	);
+}
+
+export function handleOptionalDependencies(dependencies: string[]): Plugin {
 	// Regex matching either a full module ("module") or a prefix ("module/...")
 	const filter = new RegExp(
 		`^(${dependencies.flatMap((name) => [`${name}$`, String.raw`${name}/`]).join("|")})`
@@ -56,7 +66,12 @@ export function handleOptionalDependencies(dependencies: string[]): {
 			});
 
 			// Replaces missing dependency with a throwing implementation.
-			build.onLoad({ filter: /.*/, namespace: nsMissingDependency }, ({ pluginData }) => {
+			build.onLoad({ filter: /.*/, namespace: nsMissingDependency }, ({ pluginData: rawPluginData }) => {
+				const pluginData: unknown = rawPluginData;
+				if (!isMissingDependencyPluginData(pluginData)) {
+					throw new TypeError("Missing optional dependency plugin data");
+				}
+
 				return Promise.resolve({
 					contents: `throw new Error('Missing optional dependency "${pluginData.name}"')`,
 				});

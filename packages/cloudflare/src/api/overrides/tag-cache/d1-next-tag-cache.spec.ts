@@ -21,6 +21,17 @@ vi.mock("../internal.js", () => ({
 	isPurgeCacheEnabled: () => true,
 }));
 
+interface TestOpenNextConfig {
+	dangerous?: {
+		disableTagCache?: boolean;
+	};
+}
+
+const getTestOpenNextConfig = () =>
+	(globalThis as unknown as { openNextConfig: TestOpenNextConfig }).openNextConfig;
+
+const expectAnyFunction = () => expect.any(Function) as unknown;
+
 describe("D1NextModeTagCache", () => {
 	let tagCache: D1NextModeTagCache;
 	let mockDb: {
@@ -31,6 +42,14 @@ describe("D1NextModeTagCache", () => {
 	let mockBind: ReturnType<typeof vi.fn>;
 	let mockRaw: ReturnType<typeof vi.fn>;
 	let mockBatch: ReturnType<typeof vi.fn>;
+
+	const disableTagCache = () => {
+		const config = getTestOpenNextConfig();
+		config.dangerous = {
+			...config.dangerous,
+			disableTagCache: true,
+		};
+	};
 
 	beforeEach(() => {
 		// Setup mock database.
@@ -81,7 +100,7 @@ describe("D1NextModeTagCache", () => {
 
 	describe("getLastRevalidated", () => {
 		it("should return 0 when cache is disabled", async () => {
-			openNextConfig.dangerous?.disableTagCache = true;
+			disableTagCache();
 
 			const result = await tagCache.getLastRevalidated(["tag1", "tag2"]);
 
@@ -155,7 +174,7 @@ describe("D1NextModeTagCache", () => {
 
 	describe("hasBeenRevalidated", () => {
 		it("should return false when cache is disabled", async () => {
-			openNextConfig.dangerous?.disableTagCache = true;
+			disableTagCache();
 
 			const result = await tagCache.hasBeenRevalidated(["tag1"], 1000);
 
@@ -252,7 +271,7 @@ describe("D1NextModeTagCache", () => {
 		});
 
 		it("should do nothing when cache is disabled", async () => {
-			openNextConfig.dangerous?.disableTagCache = true;
+			disableTagCache();
 
 			await tagCache.writeTags(["tag1", "tag2"]);
 
@@ -287,10 +306,10 @@ describe("D1NextModeTagCache", () => {
 
 			expect(mockBatch).toHaveBeenCalledWith([
 				expect.objectContaining({
-					bind: expect.any(Function),
+					bind: expectAnyFunction(),
 				}),
 				expect.objectContaining({
-					bind: expect.any(Function),
+					bind: expectAnyFunction(),
 				}),
 			]);
 
@@ -323,7 +342,7 @@ describe("D1NextModeTagCache", () => {
 
 			expect(mockBatch).toHaveBeenCalledWith([
 				expect.objectContaining({
-					bind: expect.any(Function),
+					bind: expectAnyFunction(),
 				}),
 			]);
 
@@ -333,7 +352,7 @@ describe("D1NextModeTagCache", () => {
 
 	describe("isStale", () => {
 		it("should return false when cache is disabled", async () => {
-			openNextConfig.dangerous!.disableTagCache = true;
+			disableTagCache();
 
 			const result = await tagCache.isStale(["tag1"], 1000);
 
@@ -425,10 +444,12 @@ describe("D1NextModeTagCache", () => {
 			const store = {
 				requestCache: {
 					getOrCreate<K, V>(namespace: string): Map<K, V> {
-						if (!caches.has(namespace)) {
-							caches.set(namespace, new Map());
+						let cache = caches.get(namespace);
+						if (!cache) {
+							cache = new Map();
+							caches.set(namespace, cache);
 						}
-						return caches.get(namespace)! as Map<K, V>;
+						return cache as Map<K, V>;
 					},
 				},
 			};
