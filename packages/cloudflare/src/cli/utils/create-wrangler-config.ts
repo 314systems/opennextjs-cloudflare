@@ -119,11 +119,11 @@ function getNameFromPackageJson(sourceDir: string): string | undefined {
 async function getLatestCompatDate(): Promise<string | undefined> {
 	try {
 		const resp = await fetch(`https://registry.npmjs.org/workerd`);
-		const latestWorkerdVersion = (
-			(await resp.json()) as {
-				"dist-tags": { latest: string };
-			}
-		)["dist-tags"].latest;
+		const responseJson: {
+			"dist-tags": { latest: string };
+		} = await resp.json();
+
+		const latestWorkerdVersion = responseJson["dist-tags"].latest;
 
 		// The format of the workerd version is `major.yyyymmdd.patch`.
 		const match = /\d+\.(\d{4})(\d{2})(\d{2})\.\d+/.exec(latestWorkerdVersion);

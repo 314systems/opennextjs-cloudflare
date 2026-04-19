@@ -82,10 +82,10 @@ export async function internalPurgeCacheByTags(env: CloudflareEnv, tags: string[
 			error("purgeCacheByTags: Rate limit exceeded. Skipping cache purge.");
 			return "rate-limit-exceeded";
 		}
-		const bodyResponse = (await response.json()) as {
+		const bodyResponse: {
 			success: boolean;
-			errors: Array<{ code: number; message: string }>;
-		};
+			errors: { code: number; message: string }[];
+		} = await response.json();
 		if (!bodyResponse.success) {
 			error(
 				"purgeCacheByTags: Cache purge failed. Errors:",

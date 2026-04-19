@@ -62,7 +62,7 @@ export function maybeGetSkewProtectionResponse(request: Request): Promise<Respon
 		const versionDomain = version.split("-")[0];
 		const hostname = `${versionDomain}-${process.env.CF_WORKER_NAME}.${process.env.CF_PREVIEW_DOMAIN}.workers.dev`;
 		url.hostname = hostname;
-		const requestToOlderDeployment = new Request(url!, request);
+		const requestToOlderDeployment = new Request(url, request);
 
 		// Remove the origin header to prevent an error with POST requests
 		const headers = new Headers(request.headers);
