@@ -14,7 +14,9 @@
 		"resolveJsonModule": true,
 		"outDir": "./dist",
 		"target": "ES2022",
-		"types": ["@cloudflare/workers-types", "@opennextjs/aws/types/global.d.ts"]
+		"types": ["@cloudflare/workers-types", "@opennextjs/aws/types/global.d.ts"],
+		"isolatedDeclarations": true,
+		"checkJs": false
 	},
 	"include": ["src/**/*.ts", "env.d.ts"],
 	"exclude": ["src/**/*.spec.ts"]

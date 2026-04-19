@@ -538,7 +538,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 		shardType: "soft" | "hard";
 		generateAllReplicas: boolean;
 	}) {
-		let replicaIndexes: Array<number | undefined> = [1];
+		let replicaIndexes: (number | undefined)[] = [1];
 		const isSoft = shardType === "soft";
 		let numReplicas = 1;
 		if (this.opts.shardReplication) {

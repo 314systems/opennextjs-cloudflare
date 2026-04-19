@@ -114,7 +114,7 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 	}
 
 	async writeTags(
-		tags: Array<string | { tag: string; stale?: number; expire?: number | null }>,
+		tags: (string | { tag: string; stale?: number; expire?: number | null })[],
 		lastModified?: number
 	): Promise<void> {
 		if (tags.length === 0) return;
@@ -134,7 +134,7 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 			}
 		} else {
 			// New call format: writeTags(tags: Array<{ tag, stale?, expire? }>)
-			for (const entry of tags as Array<{ tag: string; stale?: number; expire?: number | null }>) {
+			for (const entry of tags as { tag: string; stale?: number; expire?: number | null }[]) {
 				const staleValue = entry.stale ?? nowMs;
 				this.sql.exec(
 					`INSERT OR REPLACE INTO revalidations (tag, revalidatedAt, stale, expire) VALUES (?, ?, ?, ?)`,
