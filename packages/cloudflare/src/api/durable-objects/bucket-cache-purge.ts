@@ -9,17 +9,20 @@ const MAX_NUMBER_OF_TAGS_PER_PURGE = 100;
 export class BucketCachePurge extends DurableObject<CloudflareEnv> {
 	bufferTimeInSeconds: number;
 
-	constructor(state: DurableObjectState, env: CloudflareEnv) {
-		super(state, env);
+	constructor(ctx: DurableObjectState, env: CloudflareEnv) {
+		super(ctx, env);
 		this.bufferTimeInSeconds = env.NEXT_CACHE_DO_PURGE_BUFFER_TIME_IN_SECONDS
 			? parseInt(env.NEXT_CACHE_DO_PURGE_BUFFER_TIME_IN_SECONDS)
 			: DEFAULT_BUFFER_TIME_IN_SECONDS; // Default buffer time
 
-		void state.blockConcurrencyWhile(() => {
+		// eslint-disable-next-line @typescript-eslint/require-await
+		void ctx.blockConcurrencyWhile(async () => {
 			// Initialize the sql table if it doesn't exist
-			state.storage.sql.exec("CREATE TABLE IF NOT EXISTS cache_purge (tag TEXT NOT NULL);");
-			state.storage.sql.exec("CREATE UNIQUE INDEX IF NOT EXISTS tag_index ON cache_purge (tag);");
-			return Promise.resolve();
+			this.ctx.storage.sql.exec(`
+				CREATE TABLE IF NOT EXISTS cache_purge (
+					tag TEXT PRIMARY KEY
+				);
+			`);
 		});
 	}
 

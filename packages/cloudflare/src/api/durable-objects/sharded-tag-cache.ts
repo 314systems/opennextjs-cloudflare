@@ -14,30 +14,31 @@ export interface TagData {
 export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 	sql: SqlStorage;
 
-	constructor(state: DurableObjectState, env: CloudflareEnv) {
-		super(state, env);
-		void state.blockConcurrencyWhile(() => {
+	constructor(ctx: DurableObjectState, env: CloudflareEnv) {
+		super(ctx, env);
+
+		// eslint-disable-next-line @typescript-eslint/require-await
+		void ctx.blockConcurrencyWhile(async () => {
 			// Columns:
 			//   tag           - The cache tag.
 			//   revalidatedAt - Timestamp (ms) when the tag was last revalidated.
 			//   stale         - Timestamp (ms) when the cached entry becomes stale. Added in v1.19.
 			//   expire        - Timestamp (ms) when the cached entry expires. NULL means no expire. Added in v1.19.
-			state.storage.sql.exec(
+			this.ctx.storage.sql.exec(
 				`CREATE TABLE IF NOT EXISTS revalidations (tag TEXT PRIMARY KEY, revalidatedAt INTEGER, stale INTEGER, expire INTEGER DEFAULT NULL)`
 			);
 			// Schema migration: Add `stale` and `expire` columns for existing DO - those have been introduced to support SWR in v1.19
 			try {
 				// SQLite does not support adding multiple columns in a single ALTER TABLE statement.
-				state.storage.sql.exec(
+				this.ctx.storage.sql.exec(
 					`ALTER TABLE revalidations ADD COLUMN stale INTEGER; ALTER TABLE revalidations ADD COLUMN expire INTEGER DEFAULT NULL`
 				);
 			} catch {
 				// The ALTER TABLE statement fails if the columns already exist.
 				// It only means the DO has already been migrated.
 			}
-			return Promise.resolve();
 		});
-		this.sql = state.storage.sql;
+		this.sql = this.ctx.storage.sql;
 	}
 
 	getTagData(tags: string[]): Record<string, TagData> {
