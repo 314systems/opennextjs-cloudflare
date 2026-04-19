@@ -16,13 +16,13 @@ import { getCrossPlatformPathRegex } from "@opennextjs/aws/utils/regex.js";
  * @returns An object with the transformed exports and a boolean indicating if the build condition was found
  */
 export function transformBuildCondition(
-	conditionMap: { [key: string]: unknown },
+	conditionMap: Record<string, unknown>,
 	condition: string
 ): {
-	transformedExports: { [key: string]: unknown };
+	transformedExports: Record<string, unknown>;
 	hasBuildCondition: boolean;
 } {
-	const transformed: { [key: string]: unknown } = {};
+	const transformed: Record<string, unknown> = {};
 	const hasTopLevelBuildCondition = Object.keys(conditionMap).some(
 		(key) => key === condition && typeof conditionMap[key] === "string"
 	);
@@ -30,7 +30,7 @@ export function transformBuildCondition(
 	for (const [key, value] of Object.entries(conditionMap)) {
 		if (typeof value === "object" && value != null) {
 			const { transformedExports, hasBuildCondition: innerBuildCondition } = transformBuildCondition(
-				value as { [key: string]: unknown },
+				value as Record<string, unknown>,
 				condition
 			);
 			transformed[key] = transformedExports;
@@ -51,8 +51,8 @@ export function transformBuildCondition(
 // We only care about these 2 fields
 interface PackageJson {
 	name: string;
-	exports?: { [key: string]: unknown };
-	imports?: { [key: string]: unknown };
+	exports?: Record<string, unknown>;
+	imports?: Record<string, unknown>;
 }
 
 /**

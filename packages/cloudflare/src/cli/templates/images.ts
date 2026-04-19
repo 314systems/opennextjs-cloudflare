@@ -262,7 +262,7 @@ export function parseCdnCgiImageRequest(
 
 	// Resolve the image URL: it may be absolute (https://...) or relative.
 	let resolvedUrl: string;
-	if (imageUrl.match(/^https?:\/\//)) {
+	if (/^https?:\/\//.exec(imageUrl)) {
 		resolvedUrl = imageUrl;
 	} else {
 		// Relative URLs need a leading slash.
@@ -618,7 +618,7 @@ function validateWidthQueryParameter(requestURL: URL): ErrorResult | number {
 	if (!sizeValid) {
 		const result: ErrorResult = {
 			ok: false,
-			message: `"w" parameter (width) of ${width} is not allowed`,
+			message: `"w" parameter (width) of ${String(width)} is not allowed`,
 		};
 		return result;
 	}
@@ -666,7 +666,7 @@ function validateQualityQueryParameter(requestURL: URL): ErrorResult | number {
 	if (!__IMAGES_QUALITIES__.includes(quality)) {
 		const result: ErrorResult = {
 			ok: false,
-			message: `"q" parameter (quality) of ${quality} is not allowed`,
+			message: `"q" parameter (quality) of ${String(quality)} is not allowed`,
 		};
 		return result;
 	}

@@ -29,14 +29,14 @@ vi.mock("../utils/ask-confirmation.js", () => ({
 // Mock create-wrangler-config: findWranglerConfig returns undefined (no config found)
 vi.mock("../utils/create-wrangler-config.js", () => ({
 	findWranglerConfig: vi.fn(() => undefined),
-	createWranglerConfigFile: vi.fn(async () => ({ cachingEnabled: false })),
+	createWranglerConfigFile: vi.fn(() => ({ cachingEnabled: false })),
 }));
 
 // Mock utils
 vi.mock("./utils/utils.js", () => ({
-	compileConfig: vi.fn(async () => ({ config: {}, buildDir: "" })),
+	compileConfig: vi.fn(() => ({ config: {}, buildDir: "" })),
 	getNormalizedOptions: vi.fn(() => ({})),
-	readWranglerConfig: vi.fn(async () => ({})),
+	readWranglerConfig: vi.fn(() => ({})),
 	printHeaders: vi.fn(),
 	nextAppDir: "/test",
 	withWranglerOptions: vi.fn(),

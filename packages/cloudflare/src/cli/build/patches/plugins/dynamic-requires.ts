@@ -63,7 +63,12 @@ export function inlineDynamicRequires(updater: ContentUpdater, buildOpts: BuildO
 			callback: async ({ contents }) => patchCode(contents, await getRequirePageRule(buildOpts)),
 		},
 	]);
-	return { name: "inline-dynamic-requires", setup() {} };
+	return {
+		name: "inline-dynamic-requires",
+		setup() {
+			/* empty */
+		},
+	};
 }
 
 async function getNodeModuleLoaderRule(buildOpts: BuildOptions) {

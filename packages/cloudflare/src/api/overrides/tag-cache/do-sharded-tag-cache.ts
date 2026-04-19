@@ -308,7 +308,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 						const data = parsed as TagData;
 						return {
 							tag,
-							revalidatedAt: data.revalidatedAt ?? 0,
+							revalidatedAt: data.revalidatedAt,
 							stale: data.stale ?? null,
 							expire: data.expire ?? null,
 						};
@@ -531,7 +531,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 		shardType: "soft" | "hard";
 		generateAllReplicas: boolean;
 	}) {
-		let replicaIndexes: Array<number | undefined> = [1];
+		let replicaIndexes: (number | undefined)[] = [1];
 		const isSoft = shardType === "soft";
 		let numReplicas = 1;
 		if (this.opts.shardReplication) {
@@ -566,7 +566,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 								baseShardId: doId.options.baseShardId,
 								numberOfReplicas: numReplicas,
 								shardType,
-								...(doId.replicaId !== undefined ? { replicaId: doId.replicaId } : {}),
+								replicaId: doId.replicaId,
 								region,
 							}),
 							tag,

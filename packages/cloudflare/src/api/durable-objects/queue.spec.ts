@@ -24,7 +24,7 @@ const createDurableObjectQueue = ({
 }) => {
 	const mockState = {
 		waitUntil: vi.fn(),
-		blockConcurrencyWhile: vi.fn().mockImplementation(async (fn) => fn()),
+		blockConcurrencyWhile: vi.fn().mockImplementation((fn) => fn()),
 		storage: {
 			setAlarm: vi.fn(),
 			getAlarm: vi.fn(),
@@ -35,21 +35,18 @@ const createDurableObjectQueue = ({
 			},
 		},
 	};
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return new DOQueueHandler(mockState as any, {
+	return new DOQueueHandler(mockState, {
 		WORKER_SELF_REFERENCE: {
 			fetch: vi.fn().mockReturnValue(
 				new Promise<Response>((res) =>
-					setTimeout(
-						() =>
-							res(
-								new Response(null, {
-									...(statusCode !== undefined ? { status: statusCode } : {}),
-									headers: headers ?? new Headers([["x-nextjs-cache", "REVALIDATED"]]),
-								})
-							),
-						fetchDuration
-					)
+					setTimeout(() => {
+						res(
+							new Response(null, {
+								...(statusCode !== undefined ? { status: statusCode } : {}),
+								headers: headers ?? new Headers([["x-nextjs-cache", "REVALIDATED"]]),
+							})
+						);
+					}, fetchDuration)
 				)
 			),
 			connect: vi.fn(),
@@ -337,7 +334,7 @@ describe("DurableObjectQueue", () => {
 			expect(queue.sql.exec).not.toHaveBeenCalled();
 		});
 
-		it("should not read from the sqlite storage on checkSyncTable", async () => {
+		it("should not read from the sqlite storage on checkSyncTable", () => {
 			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			queue.checkSyncTable(createMessage("id"));
 			expect(queue.sql.exec).not.toHaveBeenCalled();

@@ -290,7 +290,7 @@ async function monkeyPatchVmModuleEdgeContext(cloudflareContext: CloudflareConte
 			[cloudflareContextSymbol]?: CloudflareContext;
 		};
 		const runtimeContext = contextifiedObject as RuntimeContext;
-		runtimeContext[cloudflareContextSymbol] ??= cloudflareContext;
+		runtimeContext[cloudflareContextSymbol] = cloudflareContext;
 		return originalRunInContext(code, contextifiedObject, options);
 	};
 }

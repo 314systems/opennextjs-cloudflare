@@ -83,7 +83,7 @@ describe("D1NextModeTagCache", () => {
 		it("should return 0 when cache is disabled", async () => {
 			(
 				globalThis as { openNextConfig?: { dangerous?: { disableTagCache?: boolean } } }
-			).openNextConfig!.dangerous!.disableTagCache = true;
+			).openNextConfig?.dangerous?.disableTagCache = true;
 
 			const result = await tagCache.getLastRevalidated(["tag1", "tag2"]);
 
@@ -157,9 +157,7 @@ describe("D1NextModeTagCache", () => {
 
 	describe("hasBeenRevalidated", () => {
 		it("should return false when cache is disabled", async () => {
-			(
-				globalThis as { openNextConfig?: { dangerous?: { disableTagCache?: boolean } } }
-			).openNextConfig!.dangerous!.disableTagCache = true;
+			openNextConfig.dangerous?.disableTagCache = true;
 
 			const result = await tagCache.hasBeenRevalidated(["tag1"], 1000);
 
@@ -256,9 +254,7 @@ describe("D1NextModeTagCache", () => {
 		});
 
 		it("should do nothing when cache is disabled", async () => {
-			(
-				globalThis as { openNextConfig?: { dangerous?: { disableTagCache?: boolean } } }
-			).openNextConfig!.dangerous!.disableTagCache = true;
+			openNextConfig.dangerous?.disableTagCache = true;
 
 			await tagCache.writeTags(["tag1", "tag2"]);
 

@@ -26,8 +26,8 @@ describe("getCacheAssets", () => {
 		await mkdir(cacheDir, { recursive: true });
 
 		for (let i = 0; i < 3; i++) {
-			await writeFile(path.join(fetchBaseDir, `${i}`), "", { encoding: "utf-8" });
-			await writeFile(path.join(cacheDir, `${i}.cache`), "", { encoding: "utf-8" });
+			await writeFile(path.join(fetchBaseDir, String(i)), "", { encoding: "utf-8" });
+			await writeFile(path.join(cacheDir, `${String(i)}.cache`), "", { encoding: "utf-8" });
 		}
 	});
 

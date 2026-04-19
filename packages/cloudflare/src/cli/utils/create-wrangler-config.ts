@@ -93,8 +93,9 @@ async function getWorkerName(projectDir: string): Promise<string> {
 async function getNameFromPackageJson(sourceDir: string): Promise<string | undefined> {
 	try {
 		const packageJsonStr = await readFile(join(sourceDir, "package.json"), "utf8");
-		const packageJson: Record<string, string> = JSON.parse(packageJsonStr);
-		if (typeof packageJson.name === "string") return packageJson.name;
+		const parsed: unknown = JSON.parse(packageJsonStr);
+		const name = (parsed as Record<string, unknown>).name;
+		if (typeof name === "string") return name;
 	} catch {
 		/* empty */
 	}
@@ -112,11 +113,8 @@ async function getNameFromPackageJson(sourceDir: string): Promise<string | undef
 async function getLatestCompatDate(): Promise<string | undefined> {
 	try {
 		const resp = await fetch("https://registry.npmjs.org/workerd");
-		const latestWorkerdVersion = (
-			(await resp.json()) as {
-				"dist-tags": { latest: string };
-			}
-		)["dist-tags"].latest;
+		const body: { "dist-tags": { latest: string } } = await resp.json();
+		const latestWorkerdVersion = body["dist-tags"].latest;
 
 		// The format of the workerd version is `major.yyyymmdd.patch`.
 		const match = /\d+\.(\d{4})(\d{2})(\d{2})\.\d+/.exec(latestWorkerdVersion);

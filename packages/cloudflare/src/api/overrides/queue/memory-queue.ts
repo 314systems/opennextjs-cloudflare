@@ -50,7 +50,7 @@ export class MemoryQueue implements Queue {
 
 			// Here we want at least to log when the revalidation was not successful
 			if (response.status !== 200 || response.headers.get("x-nextjs-cache") !== "REVALIDATED") {
-				error(`Revalidation failed for ${url} with status ${response.status}`);
+				error(`Revalidation failed for ${url} with status ${String(response.status)}`);
 			}
 			debugCache(`Revalidation successful for ${url}`);
 		} catch (e) {

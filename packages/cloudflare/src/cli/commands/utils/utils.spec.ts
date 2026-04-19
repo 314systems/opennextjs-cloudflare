@@ -20,7 +20,7 @@ vi.mock("@opennextjs/aws/logger.js", () => ({
 }));
 
 // Mock compileOpenNextConfig
-const mockCompileOpenNextConfig = vi.fn(async () => ({
+const mockCompileOpenNextConfig = vi.fn(() => ({
 	config: { default: {} },
 	buildDir: "/build",
 }));

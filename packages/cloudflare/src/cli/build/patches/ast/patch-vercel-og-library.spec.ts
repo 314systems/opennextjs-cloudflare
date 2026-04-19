@@ -41,7 +41,9 @@ describe("patchVercelOgLibrary", () => {
 		writeFileSync(path.join(openNextVercelOgDir, "noto-sans-v27-latin-regular.ttf"), "");
 	});
 
-	afterAll(() => mockFs.restore());
+	afterAll(() => {
+		mockFs.restore();
+	});
 
 	it("should patch the open-next files correctly", async () => {
 		await patchVercelOgLibrary(buildOpts);

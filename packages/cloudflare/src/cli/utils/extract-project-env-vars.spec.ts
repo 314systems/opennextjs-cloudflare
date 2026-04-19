@@ -22,7 +22,9 @@ describe("extractProjectEnvVars", () => {
 		});
 	});
 
-	afterEach(() => mockFs.restore());
+	afterEach(() => {
+		mockFs.restore();
+	});
 
 	it("should extract production env vars", () => {
 		const result = extractProjectEnvVars("production", options);

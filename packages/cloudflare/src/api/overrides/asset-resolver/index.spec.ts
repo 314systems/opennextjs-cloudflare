@@ -31,7 +31,7 @@ describe("maybeGetAssetResult", () => {
 		}) as unknown as InternalResult;
 
 	const callResolver = (method: string, rawPath: string): Promise<InternalResult | undefined> =>
-		Promise.resolve(resolver.maybeGetAssetResult!(makeEvent(method, rawPath)));
+		Promise.resolve(resolver.maybeGetAssetResult?.(makeEvent(method, rawPath)));
 
 	it("returns a 200 response with body for GET requests", async () => {
 		const body = new ReadableStream();
@@ -40,8 +40,8 @@ describe("maybeGetAssetResult", () => {
 		const result = await callResolver("GET", "/style.css");
 
 		expect(result).toBeDefined();
-		expect(result!.statusCode).toBe(200);
-		expect(result!.body).not.toBeNull();
+		expect(result?.statusCode).toBe(200);
+		expect(result?.body).not.toBeNull();
 	});
 
 	it("returns a 200 response with null body for HEAD requests", async () => {
@@ -50,8 +50,8 @@ describe("maybeGetAssetResult", () => {
 		const result = await callResolver("HEAD", "/style.css");
 
 		expect(result).toBeDefined();
-		expect(result!.statusCode).toBe(200);
-		expect(result!.body).toBeNull();
+		expect(result?.statusCode).toBe(200);
+		expect(result?.body).toBeNull();
 	});
 
 	it("returns undefined for 404 responses", async () => {

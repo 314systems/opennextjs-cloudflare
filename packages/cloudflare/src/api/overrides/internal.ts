@@ -5,10 +5,10 @@ import type { CacheEntryType, CacheValue } from "@opennextjs/aws/types/overrides
 
 import { getCloudflareContext } from "../cloudflare-context.js";
 
-export type IncrementalCacheEntry<CacheType extends CacheEntryType> = {
+export interface IncrementalCacheEntry<CacheType extends CacheEntryType> {
 	value: CacheValue<CacheType>;
 	lastModified: number;
-};
+}
 
 export const debugCache = (name: string, ...args: unknown[]): void => {
 	if (process.env.NEXT_PRIVATE_DEBUG_CACHE) {
@@ -20,11 +20,11 @@ export const FALLBACK_BUILD_ID = "no-build-id";
 
 export const DEFAULT_PREFIX = "incremental-cache";
 
-export type KeyOptions = {
+export interface KeyOptions {
 	cacheType?: CacheEntryType;
 	prefix: string | undefined;
 	buildId: string | undefined;
-};
+}
 
 export function computeCacheKey(key: string, options: KeyOptions): string {
 	const { cacheType = "cache", prefix = DEFAULT_PREFIX, buildId = FALLBACK_BUILD_ID } = options;

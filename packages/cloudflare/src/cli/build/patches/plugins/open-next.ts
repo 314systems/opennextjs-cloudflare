@@ -23,7 +23,7 @@ export function patchResolveCache(updater: ContentUpdater, buildOpts: BuildOptio
 		{
 			filter: getCrossPlatformPathRegex(indexPath),
 			contentFilter: /cacheHandlerPath/,
-			callback: async ({ contents }) => {
+			callback: ({ contents }) => {
 				contents = patchCode(contents, cacheHandlerRule);
 				contents = patchCode(contents, compositeCacheHandlerRule);
 				return contents;

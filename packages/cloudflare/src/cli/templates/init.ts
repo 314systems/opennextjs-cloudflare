@@ -61,8 +61,6 @@ function init(request: Request, env: CloudflareEnv) {
 }
 
 function initRuntime() {
-	globalThis.__dirname ??= "";
-	globalThis.__filename ??= "";
 	// Some packages rely on `import.meta.url` but it is undefined in workerd
 	// For example it causes a bunch of issues, and will make even import crash with payload
 	import.meta.url ??= "file:///worker.js";

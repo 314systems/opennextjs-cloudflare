@@ -15,7 +15,11 @@ export const BINDING_NAME = "NEXT_TAG_CACHE_D1";
  * - stale: timestamp in ms when the tag becomes stale
  * - expire: timestamp in ms when the tag expires (null means no expiry)
  */
-type D1TagValue = { revalidatedAt: number; stale: number | null; expire: number | null };
+interface D1TagValue {
+	revalidatedAt: number;
+	stale: number | null;
+	expire: number | null;
+}
 
 export class D1NextModeTagCache implements NextModeTagCache {
 	readonly mode = "nextMode" as const;
@@ -197,7 +201,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 	 * @returns request scoped in-memory cache for tag values, or undefined if ALS is not available.
 	 */
 	protected getItemsCache(): Map<string, D1TagValue | null> | undefined {
-		const store = globalThis.__openNextAls?.getStore();
+		const store = globalThis.__openNextAls.getStore();
 		return store?.requestCache.getOrCreate<string, D1TagValue | null>("d1-nextMode:tagItems");
 	}
 }
