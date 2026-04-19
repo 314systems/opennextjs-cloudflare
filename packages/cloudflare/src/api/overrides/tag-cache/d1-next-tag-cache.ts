@@ -37,7 +37,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 				.filter((v): v is D1TagValue => v != null)
 				.map((v) => v.revalidatedAt);
 			const timeMs = revalidations.length === 0 ? 0 : Math.max(...revalidations);
-			debugCache("D1NextModeTagCache", `getLastRevalidated tags=${tags} -> ${timeMs}`);
+			debugCache("D1NextModeTagCache", `getLastRevalidated tags=${String(tags)} -> ${String(timeMs)}`);
 			return timeMs;
 		} catch (e) {
 			error(e);
@@ -63,7 +63,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 
 			debugCache(
 				"D1NextModeTagCache",
-				`hasBeenRevalidated tags=${tags} at=${lastModified} -> ${revalidated}`
+				`hasBeenRevalidated tags=${String(tags)} at=${String(lastModified)} -> ${String(revalidated)}`
 			);
 			return revalidated;
 		} catch (e) {
@@ -90,7 +90,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 		);
 
 		const tagStrings = tags.map((t) => (typeof t === "string" ? t : t.tag));
-		debugCache("D1NextModeTagCache", `writeTags tags=${tagStrings} time=${nowMs}`);
+		debugCache("D1NextModeTagCache", `writeTags tags=${String(tagStrings)} time=${String(nowMs)}`);
 
 		// TODO: See https://github.com/opennextjs/opennextjs-aws/issues/986
 		if (isPurgeCacheEnabled()) {
@@ -114,7 +114,10 @@ export class D1NextModeTagCache implements NextModeTagCache {
 				return expire == null || expire > now;
 			});
 
-			debugCache("D1NextModeTagCache", `isStale tags=${tags} at=${lastModified} -> ${isStale}`);
+			debugCache(
+				"D1NextModeTagCache",
+				`isStale tags=${String(tags)} at=${String(lastModified)} -> ${String(isStale)}`
+			);
 			return isStale;
 		} catch (e) {
 			error(e);
@@ -161,9 +164,9 @@ export class D1NextModeTagCache implements NextModeTagCache {
 				const row = rowsByKey.get(this.getCacheKey(tag));
 				const value: D1TagValue | null = row
 					? {
-							revalidatedAt: (row[1] as number) ?? 0,
-							stale: (row[2] as number) ?? null,
-							expire: (row[3] as number) ?? null,
+							revalidatedAt: (row[1] as number | null) ?? 0,
+							stale: (row[2] as number | null) ?? null,
+							expire: (row[3] as number | null) ?? null,
 						}
 					: null;
 				itemsCache?.set(tag, value);
@@ -179,7 +182,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 
 		if (!db) debugCache("No D1 database found");
 
-		const isDisabled = Boolean(globalThis.openNextConfig?.dangerous?.disableTagCache);
+		const isDisabled = Boolean(openNextConfig.dangerous?.disableTagCache);
 
 		return !db || isDisabled
 			? { isDisabled: true as const }

@@ -40,7 +40,7 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 		this.sql = state.storage.sql;
 	}
 
-	async getTagData(tags: string[]): Promise<Record<string, TagData>> {
+	getTagData(tags: string[]): Record<string, TagData> {
 		if (tags.length === 0) return {};
 		try {
 			const result = this.sql
@@ -74,8 +74,8 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 	 *
 	 * Kept for backward compatibility during rolling deploys.
 	 */
-	async getLastRevalidated(tags: string[]): Promise<number> {
-		const data = await this.getTagData(tags);
+	getLastRevalidated(tags: string[]): number {
+		const data = this.getTagData(tags);
 		const values = Object.values(data);
 		const timeMs = values.length === 0 ? 0 : Math.max(...values.map(({ revalidatedAt }) => revalidatedAt));
 		debugCache("DOShardedTagCache", `getLastRevalidated tags=${String(tags)} -> time=${String(timeMs)}`);
@@ -90,8 +90,8 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 	 *
 	 * Kept for backward compatibility during rolling deploys.
 	 */
-	async hasBeenRevalidated(tags: string[], lastModified?: number): Promise<boolean> {
-		const data = await this.getTagData(tags);
+	hasBeenRevalidated(tags: string[], lastModified?: number): boolean {
+		const data = this.getTagData(tags);
 		const lastModifiedOrNowMs = lastModified ?? Date.now();
 		const revalidated = Object.values(data).some(({ revalidatedAt }) => revalidatedAt > lastModifiedOrNowMs);
 		debugCache(
@@ -109,15 +109,15 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 	 *
 	 * Kept for backward compatibility during rolling deploys.
 	 */
-	async getRevalidationTimes(tags: string[]): Promise<Record<string, number>> {
-		const data = await this.getTagData(tags);
+	getRevalidationTimes(tags: string[]): Record<string, number> {
+		const data = this.getTagData(tags);
 		return Object.fromEntries(Object.entries(data).map(([tag, { revalidatedAt }]) => [tag, revalidatedAt]));
 	}
 
-	async writeTags(
+	writeTags(
 		tags: (string | { tag: string; stale?: number; expire?: number | null })[],
 		lastModified?: number
-	): Promise<void> {
+	): void {
 		if (tags.length === 0) return;
 		const nowMs = lastModified ?? Date.now();
 		debugCache("DOShardedTagCache", `writeTags tags=${JSON.stringify(tags)} time=${String(nowMs)}`);

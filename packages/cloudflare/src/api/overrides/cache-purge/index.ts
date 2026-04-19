@@ -9,13 +9,13 @@ interface PurgeOptions {
 	type: "durableObject" | "direct";
 }
 
-type CDNPath = {
+interface CDNPath {
 	initialPath: string;
 	rawPath: string;
 	resolvedRoutes: ResolvedRoute[];
-};
+}
 
-export const purgeCache = ({ type = "direct" }: PurgeOptions): CDNInvalidationHandler => {
+export const purgeCache = ({ type }: PurgeOptions): CDNInvalidationHandler => {
 	return {
 		name: "cloudflare",
 		async invalidatePaths(paths: CDNPath[]) {
