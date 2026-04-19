@@ -98,7 +98,7 @@ export function quoteShellMeta(arg: string): string {
 		}
 		return needsQuotes ? `"${escaped}"` : escaped;
 	}
-	if (/["\s]/.test(arg) && !/'/.test(arg)) {
+	if (/["\s]/.test(arg) && !arg.includes("'")) {
 		return `'${arg.replace(/(['\\])/g, "\\$1")}'`;
 	}
 	if (/["'\s]/.test(arg)) {
