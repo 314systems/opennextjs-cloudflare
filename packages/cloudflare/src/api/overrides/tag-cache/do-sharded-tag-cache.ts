@@ -144,7 +144,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 				0,
 				...[...tagData.values()].filter((d): d is TagData => d != null).map((d) => d.revalidatedAt)
 			);
-			debugCache("ShardedDOTagCache", `getLastRevalidated tags=${tags} -> ${timeMs}`);
+			debugCache("ShardedDOTagCache", `getLastRevalidated tags=${String(tags)} -> ${String(timeMs)}`);
 			return timeMs;
 		} catch (e) {
 			error("Error while checking revalidation", e);
@@ -173,7 +173,10 @@ class ShardedDOTagCache implements NextModeTagCache {
 				if (expire != null) return expire <= now && expire > (lastModified ?? 0);
 				return revalidatedAt > (lastModified ?? now);
 			});
-			debugCache("ShardedDOTagCache", `hasBeenRevalidated tags=${tags} at=${lastModified} -> ${result}`);
+			debugCache(
+				"ShardedDOTagCache",
+				`hasBeenRevalidated tags=${String(tags)} at=${String(lastModified)} -> ${String(result)}`
+			);
 			return result;
 		} catch (e) {
 			error("Error while checking revalidation", e);
@@ -195,7 +198,10 @@ class ShardedDOTagCache implements NextModeTagCache {
 				if (stale == null || stale <= (lastModified ?? now)) return false;
 				return expire == null || expire > now;
 			});
-			debugCache("ShardedDOTagCache", `isStale tags=${tags} at=${lastModified} -> ${result}`);
+			debugCache(
+				"ShardedDOTagCache",
+				`isStale tags=${String(tags)} at=${String(lastModified)} -> ${String(result)}`
+			);
 			return result;
 		} catch (e) {
 			error("Error while checking stale", e);
@@ -222,7 +228,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 		);
 
 		const tagStrings = normalized.map((t) => t.tag);
-		debugCache("ShardedDOTagCache", `writeTags tags=${tagStrings} time=${nowMs}`);
+		debugCache("ShardedDOTagCache", `writeTags tags=${String(tagStrings)} time=${String(nowMs)}`);
 
 		const tagMap = new Map(normalized.map((t) => [t.tag, t]));
 		const shardedTagGroups = this.groupTagsByDO({ tags: tagStrings, generateAllReplicas: true });
@@ -355,7 +361,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 					new Response(JSON.stringify(data), {
 						status: 200,
 						headers: {
-							"cache-control": `max-age=${this.opts.regionalCacheTtlSec ?? 5}`,
+							"cache-control": `max-age=${String(this.opts.regionalCacheTtlSec ?? 5)}`,
 							...(tags.length > 0
 								? {
 										"cache-tag": tags.join(","),
@@ -632,7 +638,7 @@ export class DOId {
 	}
 
 	get key() {
-		return `${this.shardId};replica-${this.replicaId}${this.region ? `;region-${this.region}` : ""}`;
+		return `${this.shardId};replica-${String(this.replicaId)}${this.region ? `;region-${this.region}` : ""}`;
 	}
 }
 

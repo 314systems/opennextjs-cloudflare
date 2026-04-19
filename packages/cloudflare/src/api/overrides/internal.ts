@@ -89,7 +89,7 @@ export async function internalPurgeCacheByTags(env: CloudflareEnv, tags: string[
 		if (!bodyResponse.success) {
 			error(
 				"purgeCacheByTags: Cache purge failed. Errors:",
-				bodyResponse.errors.map((error) => `${error.code}: ${error.message}`)
+				bodyResponse.errors.map((error) => `${String(error.code)}: ${error.message}`)
 			);
 			return "purge-failed";
 		}

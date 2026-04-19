@@ -33,7 +33,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 				.filter((v): v is D1TagValue => v != null)
 				.map((v) => v.revalidatedAt);
 			const timeMs = revalidations.length === 0 ? 0 : Math.max(...revalidations);
-			debugCache("D1NextModeTagCache", `getLastRevalidated tags=${tags} -> ${timeMs}`);
+			debugCache("D1NextModeTagCache", `getLastRevalidated tags=${String(tags)} -> ${String(timeMs)}`);
 			return timeMs;
 		} catch (e) {
 			error(e);
@@ -59,7 +59,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 
 			debugCache(
 				"D1NextModeTagCache",
-				`hasBeenRevalidated tags=${tags} at=${lastModified} -> ${revalidated}`
+				`hasBeenRevalidated tags=${String(tags)} at=${String(lastModified)} -> ${String(revalidated)}`
 			);
 			return revalidated;
 		} catch (e) {
@@ -86,7 +86,7 @@ export class D1NextModeTagCache implements NextModeTagCache {
 		);
 
 		const tagStrings = tags.map((t) => (typeof t === "string" ? t : t.tag));
-		debugCache("D1NextModeTagCache", `writeTags tags=${tagStrings} time=${nowMs}`);
+		debugCache("D1NextModeTagCache", `writeTags tags=${String(tagStrings)} time=${String(nowMs)}`);
 
 		// TODO: See https://github.com/opennextjs/opennextjs-aws/issues/986
 		if (isPurgeCacheEnabled()) {
@@ -110,7 +110,10 @@ export class D1NextModeTagCache implements NextModeTagCache {
 				return expire == null || expire > now;
 			});
 
-			debugCache("D1NextModeTagCache", `isStale tags=${tags} at=${lastModified} -> ${isStale}`);
+			debugCache(
+				"D1NextModeTagCache",
+				`isStale tags=${String(tags)} at=${String(lastModified)} -> ${String(isStale)}`
+			);
 			return isStale;
 		} catch (e) {
 			error(e);

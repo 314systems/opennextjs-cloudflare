@@ -210,7 +210,7 @@ class RegionalCache implements IncrementalCache {
 			urlKey,
 			new Response(JSON.stringify(entry), {
 				headers: new Headers({
-					"cache-control": `max-age=${age}`,
+					"cache-control": `max-age=${String(age)}`,
 					...(tags.length > 0
 						? {
 								"cache-tag": tags.join(","),

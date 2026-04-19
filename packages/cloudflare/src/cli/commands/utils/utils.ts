@@ -192,7 +192,7 @@ function getWranglerArgs(
 		...(args.env ? ["--env", args.env] : []),
 		...(args.remote ? ["--remote"] : []),
 		// Note: the `args` array contains unrecognised flags.
-		...(args.args?.map((a) => `${a}`) ?? []),
+		...(args.args?.map((a) => String(a)) ?? []),
 	];
 }
 

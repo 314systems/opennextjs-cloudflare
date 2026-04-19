@@ -60,6 +60,14 @@ export function maybeGetSkewProtectionResponse(request: Request): Promise<Respon
 		}
 
 		const versionDomain = version.split("-")[0];
+		if (
+			versionDomain === undefined ||
+			process.env.CF_WORKER_NAME === undefined ||
+			process.env.CF_PREVIEW_DOMAIN === undefined
+		) {
+			return undefined;
+		}
+
 		const hostname = `${versionDomain}-${process.env.CF_WORKER_NAME}.${process.env.CF_PREVIEW_DOMAIN}.workers.dev`;
 		url.hostname = hostname;
 		const requestToOlderDeployment = new Request(url, request);

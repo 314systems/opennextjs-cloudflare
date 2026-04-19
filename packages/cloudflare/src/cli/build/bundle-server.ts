@@ -154,7 +154,7 @@ export async function bundleServer(buildOpts: BuildOptions, projectOpts: Project
 			"process.env.NEXT_RUNTIME": '"nodejs"',
 			"process.env.NODE_ENV": '"production"',
 			// This define should be safe to use for Next 14.2+, earlier versions (13.5 and less) will cause trouble
-			"process.env.__NEXT_EXPERIMENTAL_REACT": `${needsExperimentalReact(nextConfig)}`,
+			"process.env.__NEXT_EXPERIMENTAL_REACT": String(needsExperimentalReact(nextConfig)),
 			// Fix `res.validate` in Next 15.4 (together with the `route-module` patch)
 			"process.env.__NEXT_TRUST_HOST_HEADER": "true",
 		},

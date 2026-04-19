@@ -75,7 +75,7 @@ export class DOQueueHandler extends DurableObject<CloudflareEnv> {
 	async revalidate(msg: QueueMessage): Promise<void> {
 		if (this.ongoingRevalidations.size > 2 * this.maxRevalidations) {
 			warn(
-				`Your durable object has 2 times the maximum number of revalidations (${this.maxRevalidations}) in progress. If this happens often, you should consider increasing the NEXT_CACHE_DO_QUEUE_MAX_REVALIDATION or the number of durable objects with the MAX_REVALIDATE_CONCURRENCY env var.`
+				`Your durable object has 2 times the maximum number of revalidations (${String(this.maxRevalidations)}) in progress. If this happens often, you should consider increasing the NEXT_CACHE_DO_QUEUE_MAX_REVALIDATION or the number of durable objects with the MAX_REVALIDATE_CONCURRENCY env var.`
 			);
 		}
 		// If there is already an ongoing revalidation, we don't need to revalidate again
@@ -90,7 +90,7 @@ export class DOQueueHandler extends DurableObject<CloudflareEnv> {
 
 		if (this.ongoingRevalidations.size >= this.maxRevalidations) {
 			debug(
-				`The maximum number of revalidations (${this.maxRevalidations}) is reached. Blocking until one of the revalidations finishes.`
+				`The maximum number of revalidations (${String(this.maxRevalidations)}) is reached. Blocking until one of the revalidations finishes.`
 			);
 			// TODO: need more investigation
 			// We don't use `blockConcurrencyWhile` here because it block the whole durable object for 30 seconds
@@ -213,7 +213,7 @@ export class DOQueueHandler extends DurableObject<CloudflareEnv> {
 		if (existingFailedState) {
 			if (existingFailedState.retryCount >= this.maxRetries) {
 				error(
-					`The revalidation for ${msg.MessageBody.host}${msg.MessageBody.url} has failed after ${this.maxRetries} retries. It will not be tried again, but subsequent ISR requests will retry.`
+					`The revalidation for ${msg.MessageBody.host}${msg.MessageBody.url} has failed after ${String(this.maxRetries)} retries. It will not be tried again, but subsequent ISR requests will retry.`
 				);
 				this.routeInFailedState.delete(msg.MessageDeduplicationId);
 				return;

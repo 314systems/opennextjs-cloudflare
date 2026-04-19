@@ -58,7 +58,7 @@ export function handleOptionalDependencies(dependencies: string[]): {
 			// Replaces missing dependency with a throwing implementation.
 			build.onLoad({ filter: /.*/, namespace: nsMissingDependency }, ({ pluginData }) => {
 				return {
-					contents: `throw new Error('Missing optional dependency "${pluginData.name}"')`,
+					contents: `throw new Error('Missing optional dependency "${String(pluginData.name)}"')`,
 				};
 			});
 		},

@@ -27,8 +27,8 @@ export function compileDurableObjects(buildOpts: BuildOptions): void {
 			outdir: path.join(buildOpts.buildDir, "durable-objects"),
 			external: ["cloudflare:workers"],
 			define: {
-				"process.env.__NEXT_PREVIEW_MODE_ID": `"${previewModeId}"`,
-				"process.env.__NEXT_BUILD_ID": `"${BUILD_ID}"`,
+				"process.env.__NEXT_PREVIEW_MODE_ID": `"${String(previewModeId)}"`,
+				"process.env.__NEXT_BUILD_ID": `"${String(BUILD_ID)}"`,
 			},
 		},
 		buildOpts

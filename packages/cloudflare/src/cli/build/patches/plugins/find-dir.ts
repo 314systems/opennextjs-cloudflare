@@ -36,10 +36,10 @@ fix: |-
     $DIR = $DIR.replaceAll(${JSON.stringify(sep)}, ${JSON.stringify(posix.sep)});
     if ($DIR.endsWith(".next/server")) {
       if ($NAME === "app") {
-        return ${appExists};
+        return ${String(appExists)};
       }
       if ($NAME === "pages") {
-        return ${pagesExists};
+        return ${String(pagesExists)};
       }
     }
     throw new Error(\`Unexpected findDir(\${$DIR}, \${$NAME}) call!\`);

@@ -52,7 +52,7 @@ export class KVNextModeTagCache implements NextModeTagCache {
 
 	async getLastRevalidated(tags: string[]): Promise<number> {
 		const timeMs = await this.#getLastRevalidated(tags);
-		debugCache("KVNextModeTagCache", `getLastRevalidated tags=${tags} -> time=${timeMs}`);
+		debugCache("KVNextModeTagCache", `getLastRevalidated tags=${String(tags)} -> time=${String(timeMs)}`);
 		return timeMs;
 	}
 
@@ -130,7 +130,7 @@ export class KVNextModeTagCache implements NextModeTagCache {
 			});
 			debugCache(
 				"KVNextModeTagCache",
-				`hasBeenRevalidated tags=${tags} lastModified=${lastModified} -> ${revalidated}`
+				`hasBeenRevalidated tags=${String(tags)} lastModified=${String(lastModified)} -> ${String(revalidated)}`
 			);
 			return revalidated;
 		} catch (e) {
@@ -161,7 +161,7 @@ export class KVNextModeTagCache implements NextModeTagCache {
 		);
 
 		const tagStrings = tags.map((t) => (typeof t === "string" ? t : t.tag));
-		debugCache("KVNextModeTagCache", `writeTags tags=${tagStrings} time=${nowMs}`);
+		debugCache("KVNextModeTagCache", `writeTags tags=${String(tagStrings)} time=${String(nowMs)}`);
 
 		// TODO: See https://github.com/opennextjs/opennextjs-aws/issues/986
 		if (isPurgeCacheEnabled()) {
@@ -185,7 +185,10 @@ export class KVNextModeTagCache implements NextModeTagCache {
 				return expire == null || expire > now;
 			});
 
-			debugCache("KVNextModeTagCache", `isStale tags=${tags} lastModified=${lastModified} -> ${isStale}`);
+			debugCache(
+				"KVNextModeTagCache",
+				`isStale tags=${String(tags)} lastModified=${String(lastModified)} -> ${String(isStale)}`
+			);
 			return isStale;
 		} catch (e) {
 			error(e);

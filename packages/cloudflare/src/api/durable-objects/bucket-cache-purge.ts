@@ -47,7 +47,7 @@ export class BucketCachePurge extends DurableObject<CloudflareEnv> {
 		let tags = this.ctx.storage.sql
 			.exec<{ tag: string }>(
 				`
-      SELECT * FROM cache_purge LIMIT ${MAX_NUMBER_OF_TAGS_PER_PURGE}
+      SELECT * FROM cache_purge LIMIT ${String(MAX_NUMBER_OF_TAGS_PER_PURGE)}
     `
 			)
 			.toArray();
@@ -85,7 +85,7 @@ export class BucketCachePurge extends DurableObject<CloudflareEnv> {
 				tags = this.ctx.storage.sql
 					.exec<{ tag: string }>(
 						`
-          SELECT * FROM cache_purge LIMIT ${MAX_NUMBER_OF_TAGS_PER_PURGE}
+          SELECT * FROM cache_purge LIMIT ${String(MAX_NUMBER_OF_TAGS_PER_PURGE)}
         `
 					)
 					.toArray();

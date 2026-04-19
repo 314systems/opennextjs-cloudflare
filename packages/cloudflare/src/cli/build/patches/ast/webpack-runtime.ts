@@ -40,7 +40,7 @@ fix: |
   ($CHUNK_ID, _) => {
     if (!$INSTALLED_CHUNK[$CHUNK_ID]) {
       switch ($CHUNK_ID) {
-${chunks.map((chunk) => `         case ${chunk}: $INSTALL(require("./chunks/${chunk}.js")); break;`).join("\n")}
+${chunks.map((chunk) => `         case ${String(chunk)}: $INSTALL(require("./chunks/${String(chunk)}.js")); break;`).join("\n")}
          case $SELF_ID: $INSTALLED_CHUNK[$CHUNK_ID] = 1; break;
          default: throw new Error(\`Unknown chunk \${$CHUNK_ID}\`);
       }

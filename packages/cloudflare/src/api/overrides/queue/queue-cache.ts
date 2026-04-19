@@ -80,7 +80,7 @@ class QueueCache implements Queue {
 			new Response(null, {
 				status: 200,
 				headers: {
-					"Cache-Control": `max-age=${this.regionalCacheTtlSec}`,
+					"Cache-Control": `max-age=${String(this.regionalCacheTtlSec)}`,
 					// Tag cache is set to the value of the soft tag assigned by Next.js
 					// This way you can invalidate this cache as well as any other regional cache
 					"Cache-Tag": `_N_T_/${msg.MessageBody.url}`,

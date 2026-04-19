@@ -48,7 +48,7 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 					...tags
 				)
 				.toArray();
-			debugCache("DOShardedTagCache", `getTagData tags=${tags} -> ${result.length} results`);
+			debugCache("DOShardedTagCache", `getTagData tags=${String(tags)} -> ${String(result.length)} results`);
 			return Object.fromEntries(
 				result.map((row) => [
 					row.tag as string,
@@ -77,7 +77,7 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 		const data = await this.getTagData(tags);
 		const values = Object.values(data);
 		const timeMs = values.length === 0 ? 0 : Math.max(...values.map(({ revalidatedAt }) => revalidatedAt));
-		debugCache("DOShardedTagCache", `getLastRevalidated tags=${tags} -> time=${timeMs}`);
+		debugCache("DOShardedTagCache", `getLastRevalidated tags=${String(tags)} -> time=${String(timeMs)}`);
 		return timeMs;
 	}
 
@@ -93,7 +93,10 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 		const data = await this.getTagData(tags);
 		const lastModifiedOrNowMs = lastModified ?? Date.now();
 		const revalidated = Object.values(data).some(({ revalidatedAt }) => revalidatedAt > lastModifiedOrNowMs);
-		debugCache("DOShardedTagCache", `hasBeenRevalidated tags=${tags} -> revalidated=${revalidated}`);
+		debugCache(
+			"DOShardedTagCache",
+			`hasBeenRevalidated tags=${String(tags)} -> revalidated=${String(revalidated)}`
+		);
 		return revalidated;
 	}
 
@@ -116,7 +119,7 @@ export class DOShardedTagCache extends DurableObject<CloudflareEnv> {
 	): Promise<void> {
 		if (tags.length === 0) return;
 		const nowMs = lastModified ?? Date.now();
-		debugCache("DOShardedTagCache", `writeTags tags=${JSON.stringify(tags)} time=${nowMs}`);
+		debugCache("DOShardedTagCache", `writeTags tags=${JSON.stringify(tags)} time=${String(nowMs)}`);
 
 		if (typeof tags[0] === "string") {
 			// Old call format: writeTags(tags: string[], lastModified: number)

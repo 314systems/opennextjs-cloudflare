@@ -54,7 +54,9 @@ class StaticAssetsIncrementalCache implements IncrementalCache {
 		_value: CacheValue<CacheType>,
 		cacheType?: CacheType
 	): Promise<void> {
-		error(`StaticAssetsIncrementalCache: Failed to set to read-only cache key=${key} type=${cacheType}`);
+		error(
+			`StaticAssetsIncrementalCache: Failed to set to read-only cache key=${key} type=${String(cacheType)}`
+		);
 	}
 
 	async delete(): Promise<void> {
