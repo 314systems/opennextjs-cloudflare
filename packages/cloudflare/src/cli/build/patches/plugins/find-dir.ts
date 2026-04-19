@@ -15,12 +15,12 @@ export function inlineFindDir(updater: ContentUpdater, buildOpts: BuildOptions):
 		{
 			filter: getCrossPlatformPathRegex(String.raw`/next/dist/lib/find-pages-dir\.js$`, { escape: false }),
 			contentFilter: /function findDir\(/,
-			callback: async ({ contents }) => patchCode(contents, await getRule(buildOpts)),
+			callback: ({ contents }) => patchCode(contents, getRule(buildOpts)),
 		},
 	]);
 }
 
-async function getRule(buildOpts: BuildOptions) {
+function getRule(buildOpts: BuildOptions) {
 	const { outputDir } = buildOpts;
 
 	const baseDir = join(outputDir, "server-functions/default", getPackagePath(buildOpts), ".next/server");
@@ -36,10 +36,10 @@ fix: |-
     $DIR = $DIR.replaceAll(${JSON.stringify(sep)}, ${JSON.stringify(posix.sep)});
     if ($DIR.endsWith(".next/server")) {
       if ($NAME === "app") {
-        return ${appExists};
+        return ${String(appExists)};
       }
       if ($NAME === "pages") {
-        return ${pagesExists};
+        return ${String(pagesExists)};
       }
     }
     throw new Error(\`Unexpected findDir(\${$DIR}, \${$NAME}) call!\`);

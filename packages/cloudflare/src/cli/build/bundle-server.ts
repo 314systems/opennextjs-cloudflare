@@ -27,7 +27,7 @@ import { patchRouteModules } from "./patches/plugins/route-module.js";
 import { shimReact } from "./patches/plugins/shim-react.js";
 import { setWranglerExternal } from "./patches/plugins/wrangler-external.js";
 import { copyPackageCliFiles } from "./utils/copy-package-cli-files.js";
-import { needsExperimentalReact } from "./utils/needs-experimental-react.js";
+import { type ExtendedNextConfig, needsExperimentalReact } from "./utils/needs-experimental-react.js";
 
 /** The dist directory of the Cloudflare adapter package */
 const packageDistDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -55,7 +55,11 @@ export async function bundleServer(buildOpts: BuildOptions, projectOpts: Project
 	const { appPath, outputDir, monorepoRoot, debug } = buildOpts;
 	const dotNextPath = path.join(outputDir, "server-functions/default", getPackagePath(buildOpts), ".next");
 	const serverFiles = path.join(dotNextPath, "required-server-files.json");
-	const nextConfig = JSON.parse(await readFile(serverFiles, "utf-8")).config;
+	const parsed: unknown = JSON.parse(await readFile(serverFiles, "utf-8"));
+	if (typeof parsed !== "object" || parsed === null || !("config" in parsed)) {
+		throw new Error(`Invalid required-server-files.json: ${serverFiles}`);
+	}
+	const nextConfig = (parsed as { config: ExtendedNextConfig }).config;
 
 	const useTurbopack = getBundlerRuntime(buildOpts) === "turbopack";
 
@@ -153,7 +157,7 @@ export async function bundleServer(buildOpts: BuildOptions, projectOpts: Project
 			"process.env.NEXT_RUNTIME": '"nodejs"',
 			"process.env.NODE_ENV": '"production"',
 			// This define should be safe to use for Next 14.2+, earlier versions (13.5 and less) will cause trouble
-			"process.env.__NEXT_EXPERIMENTAL_REACT": `${needsExperimentalReact(nextConfig)}`,
+			"process.env.__NEXT_EXPERIMENTAL_REACT": String(needsExperimentalReact(nextConfig)),
 			// Fix `res.validate` in Next 15.4 (together with the `route-module` patch)
 			"process.env.__NEXT_TRUST_HOST_HEADER": "true",
 		},

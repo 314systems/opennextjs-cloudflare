@@ -21,7 +21,6 @@
  */
 
 // re-enable when types are fixed in the cloudflare lib
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import path from "node:path";
 
 import { loadConfig } from "@opennextjs/aws/adapters/config/util.js";
@@ -62,8 +61,9 @@ export async function getDeploymentMapping(
 	// in the wrangler config files
 	const envVars = { ...workerEnvVars, ...process.env };
 
-	const nextConfig = loadConfig(path.join(buildOpts.appBuildOutputPath, ".next"));
-	const deploymentId = nextConfig.deploymentId;
+	const { deploymentId } = loadConfig(path.join(buildOpts.appBuildOutputPath, ".next")) as {
+		deploymentId?: string;
+	};
 
 	if (!deploymentId) {
 		logger.error("Deployment ID should be set in the Next config when skew protection is enabled");
@@ -90,28 +90,26 @@ export async function getDeploymentMapping(
 		process.exit(1);
 	}
 
-	const apiToken = envVars.CF_WORKERS_SCRIPTS_API_TOKEN!;
-	const accountId = envVars.CF_ACCOUNT_ID!;
+	const apiToken = envVars.CF_WORKERS_SCRIPTS_API_TOKEN;
+	const accountId = envVars.CF_ACCOUNT_ID;
 
 	const client = new Cloudflare({ apiToken });
-	const scriptName = envVars.CF_WORKER_NAME!;
+	const scriptName = envVars.CF_WORKER_NAME;
 
-	const maxVersionAgeDays = config.cloudflare?.skewProtection?.maxVersionAgeDays;
+	const maxVersionAgeDays = config.cloudflare.skewProtection.maxVersionAgeDays;
 	const deployedVersions = await listWorkerVersions(scriptName, {
 		client,
 		accountId,
-		...(config.cloudflare?.skewProtection?.maxNumberOfVersions !== undefined
+		...(config.cloudflare.skewProtection.maxNumberOfVersions !== undefined
 			? { maxNumberOfVersions: config.cloudflare.skewProtection.maxNumberOfVersions }
 			: {}),
-		...(maxVersionAgeDays !== undefined
-			? { afterTimeMs: Date.now() - maxVersionAgeDays * MS_PER_DAY }
-			: {}),
+		...(maxVersionAgeDays !== undefined ? { afterTimeMs: Date.now() - maxVersionAgeDays * MS_PER_DAY } : {}),
 	});
 
 	const existingMapping =
 		deployedVersions.length === 0
 			? {}
-			: await getExistingDeploymentMapping(scriptName, deployedVersions[0]!.id, {
+			: await getExistingDeploymentMapping(scriptName, deployedVersions[0]?.id, {
 					client,
 					accountId,
 				});
@@ -149,7 +147,7 @@ export function updateDeploymentMapping(
 
 	for (const [deployment, version] of Object.entries(mapping)) {
 		if (version === CURRENT_VERSION_ID && versions.length > 0) {
-			newMapping[deployment] = versions[0]!.id;
+			newMapping[deployment] = versions[0]?.id;
 		} else if (versionIds.has(version)) {
 			newMapping[deployment] = version;
 		}
@@ -178,12 +176,12 @@ async function getExistingDeploymentMapping(
 	}
 ): Promise<Record<string, string>> {
 	// See https://github.com/cloudflare/cloudflare-typescript/issues/2652
-	const bindings =
-		((await getVersionDetail(scriptName, versionId, options)).resources.bindings as any[]) ?? [];
+	const bindings = (await getVersionDetail(scriptName, versionId, options)).resources.bindings ?? [];
 
 	for (const binding of bindings) {
+		// eslint-disable-next-line @typescript-eslint/no-deprecated
 		if (binding.name === DEPLOYMENT_MAPPING_ENV_NAME && binding.type == "plain_text") {
-			return JSON.parse(binding.text);
+			return JSON.parse(binding.text) as Record<string, string>;
 		}
 	}
 
@@ -260,7 +258,7 @@ export async function listWorkerVersions(
 			}
 		}
 	} catch (e) {
-		if (e instanceof NotFoundError && e.status === 404) {
+		if (e instanceof NotFoundError) {
 			// The worker has not been deployed before, no previous versions.
 			return [];
 		}

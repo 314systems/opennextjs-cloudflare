@@ -47,7 +47,7 @@ function discoverExternalModuleMappings(filePath: string): Map<string, string> {
 				const entryPath = path.join(nodeModulesDir, entry.name);
 				const target = fs.readlinkSync(entryPath);
 				// target is like "../../node_modules/shiki" — extract package name
-				const match = target.match(/node_modules\/(.+)$/);
+				const match = /node_modules\/(.+)$/.exec(target);
 				if (match?.[1]) {
 					mappings.set(entry.name, match[1]);
 				}
@@ -142,7 +142,7 @@ function discoverBareExternalImports(tracedFiles: string[], runtimeCode: string)
 	// Turbopack assigns `externalImport` to a property on the context prototype,
 	// e.g. `contextPrototype.y = externalImport`. The property name could change between versions,
 	// so we extract it dynamically from the runtime code rather than hardcoding it.
-	const propMatch = runtimeCode.match(/contextPrototype\.(\w+)\s*=\s*externalImport/);
+	const propMatch = /contextPrototype\.(\w+)\s*=\s*externalImport/.exec(runtimeCode);
 	if (!propMatch?.[1]) {
 		return bareImports;
 	}
