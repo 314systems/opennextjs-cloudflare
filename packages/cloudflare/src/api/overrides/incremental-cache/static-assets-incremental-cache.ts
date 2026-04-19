@@ -75,4 +75,5 @@ class StaticAssetsIncrementalCache implements IncrementalCache {
 	}
 }
 
-export default new StaticAssetsIncrementalCache();
+const staticAssetsIncrementalCache: StaticAssetsIncrementalCache = new StaticAssetsIncrementalCache();
+export default staticAssetsIncrementalCache;

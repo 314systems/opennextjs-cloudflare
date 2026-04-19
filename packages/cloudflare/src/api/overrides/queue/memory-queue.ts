@@ -67,4 +67,5 @@ export class MemoryQueue implements Queue {
 	}
 }
 
-export default new MemoryQueue();
+const memoryQueue: MemoryQueue = new MemoryQueue();
+export default memoryQueue;

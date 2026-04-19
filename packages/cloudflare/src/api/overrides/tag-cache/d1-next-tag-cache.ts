@@ -202,4 +202,5 @@ export class D1NextModeTagCache implements NextModeTagCache {
 	}
 }
 
-export default new D1NextModeTagCache();
+const d1NextModeTagCache: D1NextModeTagCache = new D1NextModeTagCache();
+export default d1NextModeTagCache;

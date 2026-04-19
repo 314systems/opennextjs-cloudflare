@@ -228,4 +228,5 @@ export class KVNextModeTagCache implements NextModeTagCache {
 	}
 }
 
-export default new KVNextModeTagCache();
+const kvNextModeTagCache: KVNextModeTagCache = new KVNextModeTagCache();
+export default kvNextModeTagCache;
