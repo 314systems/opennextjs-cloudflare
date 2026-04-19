@@ -126,7 +126,7 @@ async function getLatestCompatDate(): Promise<string | undefined> {
 		)["dist-tags"].latest;
 
 		// The format of the workerd version is `major.yyyymmdd.patch`.
-		const match = latestWorkerdVersion.match(/\d+\.(\d{4})(\d{2})(\d{2})\.\d+/);
+		const match = /\d+\.(\d{4})(\d{2})(\d{2})\.\d+/.exec(latestWorkerdVersion);
 
 		if (match) {
 			const [, year, month, day] = match;

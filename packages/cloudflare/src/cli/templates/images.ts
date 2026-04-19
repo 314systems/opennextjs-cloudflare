@@ -247,7 +247,7 @@ export async function handleCdnCgiImageRequest(requestURL: URL, env: CloudflareE
 export function parseCdnCgiImageRequest(
 	pathname: string
 ): { ok: true; url: string; static: boolean } | ErrorResult {
-	const match = pathname.match(/^\/cdn-cgi\/image\/(?<options>[^/]+)\/(?<url>.+)$/);
+	const match = /^\/cdn-cgi\/image\/(?<options>[^/]+)\/(?<url>.+)$/.exec(pathname);
 	if (
 		// Valid URLs have at least one option
 		!match?.groups?.options ||
@@ -266,7 +266,7 @@ export function parseCdnCgiImageRequest(
 
 	// Resolve the image URL: it may be absolute (https://...) or relative.
 	let resolvedUrl: string;
-	if (imageUrl.match(/^https?:\/\//)) {
+	if (/^https?:\/\//.exec(imageUrl)) {
 		resolvedUrl = imageUrl;
 	} else {
 		// Relative URLs need a leading slash.
