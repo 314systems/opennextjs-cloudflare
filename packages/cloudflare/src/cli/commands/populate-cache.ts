@@ -19,7 +19,7 @@ import { globSync } from "glob";
 import { tqdm } from "ts-tqdm";
 import type { Unstable_Config as WranglerConfig } from "wrangler";
 import { unstable_startWorker } from "wrangler";
-import type yargs from "yargs";
+import type { Argv } from "yargs";
 
 import {
 	BINDING_NAME as KV_CACHE_BINDING_NAME,
@@ -631,7 +631,7 @@ function populateStaticAssetsIncrementalCache(options: BuildOptions) {
  *
  * Consumes 2 positional parameters.
  */
-export function addPopulateCacheCommand<T extends yargs.Argv>(y: T) {
+export function addPopulateCacheCommand<T>(y: Argv<T>): Argv<T> {
 	return y.command("populateCache", "Populate the cache for a built Next.js app", (c) =>
 		c
 			.command(
@@ -650,9 +650,16 @@ export function addPopulateCacheCommand<T extends yargs.Argv>(y: T) {
 	);
 }
 
-export function withPopulateCacheOptions<T extends yargs.Argv>(args: T) {
+interface PopulateCacheCliArgs {
+	config: string | undefined;
+	configPath: string | undefined;
+	env: string | undefined;
+	cacheChunkSize: number | undefined;
+}
+
+export function withPopulateCacheOptions<T>(args: Argv<T>): Argv<T & PopulateCacheCliArgs> {
 	return withWranglerOptions(args).options("cacheChunkSize", {
 		type: "number",
 		desc: "Number of entries per chunk when populating the cache",
-	});
+	}) as Argv<T & PopulateCacheCliArgs>;
 }

@@ -10,7 +10,7 @@ import {
 	getNextVersion,
 } from "@opennextjs/aws/build/helper.js";
 import logger from "@opennextjs/aws/logger.js";
-import type yargs from "yargs";
+import type { Argv } from "yargs";
 
 import { askConfirmation } from "../utils/ask-confirmation.js";
 import { createOpenNextConfigFile, findOpenNextConfig } from "../utils/create-open-next-config.js";
@@ -324,7 +324,7 @@ async function maybeCreateNextConfigFileIfMissing(
 /**
  * Add the `migrate` command to yargs configuration.
  */
-export function addMigrateCommand<T extends yargs.Argv>(y: T) {
+export function addMigrateCommand(y: Argv): Argv {
 	return y.command(
 		"migrate",
 		"Set up the OpenNext Cloudflare adapter in an existing Next.js project",

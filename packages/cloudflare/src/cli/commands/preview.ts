@@ -1,5 +1,5 @@
 import logger from "@opennextjs/aws/logger.js";
-import type yargs from "yargs";
+import type { Argv } from "yargs";
 
 import { populateCache, withPopulateCacheOptions } from "./populate-cache.js";
 import { getEnvFromPlatformProxy } from "./utils/helpers.js";
@@ -62,7 +62,7 @@ export async function previewCommand(
  *
  * Consumes 1 positional parameter.
  */
-export function addPreviewCommand<T extends yargs.Argv>(y: T) {
+export function addPreviewCommand(y: Argv): Argv {
 	return y.command(
 		"preview [args..]",
 		"Preview a built OpenNext app with a Wrangler dev server",

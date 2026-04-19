@@ -1,5 +1,5 @@
 import logger from "@opennextjs/aws/logger.js";
-import type yargs from "yargs";
+import type { Argv } from "yargs";
 
 import { DEPLOYMENT_MAPPING_ENV_NAME } from "../templates/skew-protection.js";
 import { populateCache, withPopulateCacheOptions } from "./populate-cache.js";
@@ -84,7 +84,7 @@ export async function deployCommand(args: WithWranglerArgs<{ cacheChunkSize?: nu
  *
  * Consumes 1 positional parameter.
  */
-export function addDeployCommand<T extends yargs.Argv>(y: T) {
+export function addDeployCommand(y: Argv): Argv {
 	return y.command(
 		"deploy [args..]",
 		"Deploy a built OpenNext app to Cloudflare Workers",

@@ -8,7 +8,7 @@ import { type BuildOptions, normalizeOptions } from "@opennextjs/aws/build/helpe
 import { printHeader, showWarningOnWindows } from "@opennextjs/aws/build/utils.js";
 import logger from "@opennextjs/aws/logger.js";
 import { unstable_readConfig } from "wrangler";
-import type yargs from "yargs";
+import type { ArgumentsCamelCase, Argv } from "yargs";
 
 import type { OpenNextConfig } from "../../../api/config.js";
 import { ensureCloudflareConfig } from "../../build/utils/ensure-cf-config.js";
@@ -129,10 +129,16 @@ export async function readWranglerConfig(
 	return await unstable_readConfig({ env: args.env, config: args.wranglerConfigPath });
 }
 
+interface WranglerCliArgs {
+	config: string | undefined;
+	configPath: string | undefined;
+	env: string | undefined;
+}
+
 /**
  * Adds flags for the wrangler config path and environment to the yargs configuration.
  */
-export function withWranglerOptions<T extends yargs.Argv>(args: T) {
+export function withWranglerOptions<T>(args: Argv<T>): Argv<T & WranglerCliArgs> {
 	return args
 		.option("config", {
 			type: "string",
@@ -148,15 +154,15 @@ export function withWranglerOptions<T extends yargs.Argv>(args: T) {
 			type: "string",
 			alias: "e",
 			desc: "Wrangler environment to use for operations",
-		});
+		}) as Argv<T & WranglerCliArgs>;
 }
 
-type WranglerInputArgs = {
+interface WranglerInputArgs {
 	configPath: string | undefined;
 	config: string | undefined;
 	env: string | undefined;
 	remote?: boolean | undefined;
-};
+}
 
 /**
  *
@@ -195,7 +201,7 @@ function getWranglerArgs(
  * @param args
  * @returns The inputted args, and an array of arguments that can be given to wrangler commands, including the `--config` and `--env` args.
  */
-export function withWranglerPassthroughArgs<T extends yargs.ArgumentsCamelCase<WranglerInputArgs>>(
+export function withWranglerPassthroughArgs<T extends ArgumentsCamelCase<WranglerInputArgs>>(
 	args: T
 ): WithWranglerArgs<T> {
 	return {
