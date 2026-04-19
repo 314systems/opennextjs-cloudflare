@@ -35,7 +35,7 @@ export const patchUseCacheIO: CodePatcher = {
 				escape: false,
 			}),
 			contentFilter: /createSnapshot/,
-			patchCode: ({ code }) => patchCode(code, rule),
+			patchCode: async ({ code }) => patchCode(code, rule),
 		},
 	],
 };

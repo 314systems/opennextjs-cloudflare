@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { describe, expect, it, vi } from "vitest";
 
 import { DOQueueHandler } from "./queue.js";
@@ -11,6 +12,52 @@ vi.mock("cloudflare:workers", () => ({
 	},
 }));
 
+const fetchMocks = new WeakMap<DOQueueHandler, Mock<Service["fetch"]>>();
+const setAlarmMocks = new WeakMap<DOQueueHandler, Mock<DurableObjectStorage["setAlarm"]>>();
+const getAlarmMocks = new WeakMap<DOQueueHandler, Mock<DurableObjectStorage["getAlarm"]>>();
+const sqlExecMocks = new WeakMap<DOQueueHandler, Mock<SqlStorage["exec"]>>();
+
+const getFetchMock = (queue: DOQueueHandler): Mock<Service["fetch"]> => {
+	const fetchMock = fetchMocks.get(queue);
+	if (!fetchMock) throw new Error("Missing fetch mock");
+	return fetchMock;
+};
+
+const getSetAlarmMock = (queue: DOQueueHandler): Mock<DurableObjectStorage["setAlarm"]> => {
+	const setAlarmMock = setAlarmMocks.get(queue);
+	if (!setAlarmMock) throw new Error("Missing setAlarm mock");
+	return setAlarmMock;
+};
+
+const getGetAlarmMock = (queue: DOQueueHandler): Mock<DurableObjectStorage["getAlarm"]> => {
+	const getAlarmMock = getAlarmMocks.get(queue);
+	if (!getAlarmMock) throw new Error("Missing getAlarm mock");
+	return getAlarmMock;
+};
+
+const getSqlExecMock = (queue: DOQueueHandler): Mock<SqlStorage["exec"]> => {
+	const sqlExecMock = sqlExecMocks.get(queue);
+	if (!sqlExecMock) throw new Error("Missing sql exec mock");
+	return sqlExecMock;
+};
+
+function* emptyIterable<T>(): IterableIterator<T> {
+	yield* [] as T[];
+}
+
+const createSqlStorageCursor = <T extends Record<string, SqlStorageValue>>(): SqlStorageCursor<T> => ({
+	next: () => ({ done: true }),
+	toArray: () => [],
+	one: () => {
+		throw new Error("Unexpected sql cursor row read");
+	},
+	raw: <U extends SqlStorageValue[]>() => emptyIterable<U>(),
+	columnNames: [],
+	rowsRead: 0,
+	rowsWritten: 0,
+	[Symbol.iterator]: () => emptyIterable<T>(),
+});
+
 const createDurableObjectQueue = ({
 	fetchDuration,
 	statusCode,
@@ -22,37 +69,45 @@ const createDurableObjectQueue = ({
 	headers?: Headers;
 	disableSQLite?: boolean;
 }) => {
+	const fetchMock = vi.fn<Service["fetch"]>().mockImplementation(
+		() =>
+			new Promise<Response>((res) =>
+				setTimeout(() => {
+					res(
+						new Response(null, {
+							...(statusCode !== undefined ? { status: statusCode } : {}),
+							headers: headers ?? new Headers([["x-nextjs-cache", "REVALIDATED"]]),
+						})
+					);
+				}, fetchDuration)
+			)
+	);
+	const setAlarmMock = vi.fn<DurableObjectStorage["setAlarm"]>();
+	const getAlarmMock = vi.fn<DurableObjectStorage["getAlarm"]>();
+	const sqlExecMock = vi.fn<SqlStorage["exec"]>().mockImplementation(() => createSqlStorageCursor());
 	const mockState = {
 		waitUntil: vi.fn(),
-		blockConcurrencyWhile: vi.fn().mockImplementation((fn) => fn()),
+		blockConcurrencyWhile: vi.fn().mockImplementation((fn: () => unknown) => fn()),
 		storage: {
-			setAlarm: vi.fn(),
-			getAlarm: vi.fn(),
+			setAlarm: setAlarmMock,
+			getAlarm: getAlarmMock,
 			sql: {
-				exec: vi.fn().mockImplementation(() => ({
-					one: vi.fn(),
-				})),
+				exec: sqlExecMock,
 			},
 		},
 	};
-	return new DOQueueHandler(mockState, {
+	const queue = new DOQueueHandler(mockState as unknown as DurableObjectState, {
 		WORKER_SELF_REFERENCE: {
-			fetch: vi.fn().mockReturnValue(
-				new Promise<Response>((res) =>
-					setTimeout(() => {
-						res(
-							new Response(null, {
-								...(statusCode !== undefined ? { status: statusCode } : {}),
-								headers: headers ?? new Headers([["x-nextjs-cache", "REVALIDATED"]]),
-							})
-						);
-					}, fetchDuration)
-				)
-			),
+			fetch: fetchMock,
 			connect: vi.fn(),
 		},
 		...(disableSQLite ? { NEXT_CACHE_DO_QUEUE_DISABLE_SQLITE: "true" } : {}),
 	});
+	fetchMocks.set(queue, fetchMock);
+	setAlarmMocks.set(queue, setAlarmMock);
+	getAlarmMocks.set(queue, getAlarmMock);
+	sqlExecMocks.set(queue, sqlExecMock);
+	return queue;
 };
 
 const createMessage = (dedupId: string, lastModified = Date.now()) => ({
@@ -67,8 +122,7 @@ describe("DurableObjectQueue", () => {
 		it("should process a single revalidation", async () => {
 			process.env.__NEXT_PREVIEW_MODE_ID = "test";
 			const queue = createDurableObjectQueue({ fetchDuration: 10 });
-			const firstRequest = await queue.revalidate(createMessage("id"));
-			expect(firstRequest).toBeUndefined();
+			await queue.revalidate(createMessage("id"));
 			expect(queue.ongoingRevalidations.size).toBe(1);
 			expect(queue.ongoingRevalidations.has("id")).toBe(true);
 
@@ -76,13 +130,13 @@ describe("DurableObjectQueue", () => {
 
 			expect(queue.ongoingRevalidations.size).toBe(0);
 			expect(queue.ongoingRevalidations.has("id")).toBe(false);
-			expect(queue.service.fetch).toHaveBeenCalledWith("https://test.local/test", {
+			expect(getFetchMock(queue)).toHaveBeenCalledWith("https://test.local/test", {
 				method: "HEAD",
 				headers: {
 					"x-prerender-revalidate": "test",
 					"x-isr": "1",
 				},
-				signal: expect.any(AbortSignal),
+				signal: expect.any(AbortSignal) as AbortSignal,
 			});
 		});
 
@@ -113,13 +167,13 @@ describe("DurableObjectQueue", () => {
 			// We then need to await for the actual revalidation to finish
 			await Promise.all(Array.from(queue.ongoingRevalidations.values()));
 			expect(queue.ongoingRevalidations.size).toBe(0);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(6);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(6);
 		});
 	});
 
 	describe("failed revalidation", () => {
 		it("should not put it in failed state for an incorrect 200", async () => {
-			vi.spyOn(console, "error").mockImplementation(() => {});
+			vi.spyOn(console, "error").mockImplementation(() => undefined);
 			const queue = createDurableObjectQueue({
 				fetchDuration: 10,
 				statusCode: 200,
@@ -142,12 +196,12 @@ describe("DurableObjectQueue", () => {
 			await queue.ongoingRevalidations.get("id");
 
 			expect(queue.routeInFailedState.size).toBe(0);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(1);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(1);
 
 			await queue.revalidate(createMessage("id"));
 
 			expect(queue.routeInFailedState.size).toBe(0);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(2);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(2);
 		});
 
 		it("should put it in failed state if revalidation fails with 500", async () => {
@@ -161,21 +215,20 @@ describe("DurableObjectQueue", () => {
 
 			expect(queue.routeInFailedState.size).toBe(1);
 			expect(queue.routeInFailedState.has("id")).toBe(true);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(1);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(1);
 
 			await queue.revalidate(createMessage("id"));
 
 			expect(queue.routeInFailedState.size).toBe(1);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(1);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(1);
 		});
 
 		it("should put it in failed state if revalidation fetch throw", async () => {
-			vi.spyOn(console, "error").mockImplementation(() => {});
+			vi.spyOn(console, "error").mockImplementation(() => undefined);
 			const queue = createDurableObjectQueue({
 				fetchDuration: 10,
 			});
-			// @ts-expect-error - This is mocked above
-			queue.service.fetch.mockImplementationOnce(() => Promise.reject(new Error("fetch error")));
+			getFetchMock(queue).mockRejectedValueOnce(new Error("fetch error"));
 			await queue.revalidate(createMessage("id"));
 
 			await queue.ongoingRevalidations.get("id");
@@ -183,46 +236,40 @@ describe("DurableObjectQueue", () => {
 			expect(queue.routeInFailedState.size).toBe(1);
 			expect(queue.routeInFailedState.has("id")).toBe(true);
 			expect(queue.ongoingRevalidations.size).toBe(0);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(1);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(1);
 
 			await queue.revalidate(createMessage("id"));
 
 			expect(queue.routeInFailedState.size).toBe(1);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(1);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(1);
 		});
 	});
 
 	describe("addAlarm", () => {
-		const getStorage = (queue: DOQueueHandler): DurableObjectStorage => {
-			// @ts-expect-error - ctx is a protected field
-			return queue.ctx.storage;
-		};
-
 		it("should not add an alarm if there are no failed states", async () => {
-			const queue = createDurableObjectQueue({ fetchDuration: 10 });
+			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			await queue.addAlarm();
-			expect(getStorage(queue).setAlarm).not.toHaveBeenCalled();
+			expect(getSetAlarmMock(queue)).not.toHaveBeenCalled();
 		});
 
 		it("should add an alarm if there are failed states", async () => {
-			const queue = createDurableObjectQueue({ fetchDuration: 10 });
+			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			const nextAlarmMs = Date.now() + 1000;
 			queue.routeInFailedState.set("id", { msg: createMessage("id"), retryCount: 0, nextAlarmMs });
 			await queue.addAlarm();
-			expect(getStorage(queue).setAlarm).toHaveBeenCalledWith(nextAlarmMs);
+			expect(getSetAlarmMock(queue)).toHaveBeenCalledWith(nextAlarmMs);
 		});
 
 		it("should not add an alarm if there is already an alarm set", async () => {
-			const queue = createDurableObjectQueue({ fetchDuration: 10 });
+			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			queue.routeInFailedState.set("id", { msg: createMessage("id"), retryCount: 0, nextAlarmMs: 1000 });
-			// @ts-expect-error
-			queue.ctx.storage.getAlarm.mockResolvedValueOnce(1000);
+			getGetAlarmMock(queue).mockResolvedValueOnce(1000);
 			await queue.addAlarm();
-			expect(getStorage(queue).setAlarm).not.toHaveBeenCalled();
+			expect(getSetAlarmMock(queue)).not.toHaveBeenCalled();
 		});
 
 		it("should set the alarm to the lowest nextAlarm", async () => {
-			const queue = createDurableObjectQueue({ fetchDuration: 10 });
+			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			const nextAlarmMs = Date.now() + 1000;
 			const firstAlarm = Date.now() + 500;
 			queue.routeInFailedState.set("id", { msg: createMessage("id"), retryCount: 0, nextAlarmMs });
@@ -232,7 +279,7 @@ describe("DurableObjectQueue", () => {
 				nextAlarmMs: firstAlarm,
 			});
 			await queue.addAlarm();
-			expect(getStorage(queue).setAlarm).toHaveBeenCalledWith(firstAlarm);
+			expect(getSetAlarmMock(queue)).toHaveBeenCalledWith(firstAlarm);
 		});
 	});
 
@@ -283,7 +330,7 @@ describe("DurableObjectQueue", () => {
 			});
 			await queue.alarm();
 			expect(queue.routeInFailedState.size).toBe(0);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(2);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(2);
 		});
 
 		it("should execute revalidations for the next event to retry", async () => {
@@ -300,7 +347,7 @@ describe("DurableObjectQueue", () => {
 			});
 			await queue.alarm();
 			expect(queue.routeInFailedState.size).toBe(1);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(1);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(1);
 			expect(queue.routeInFailedState.has("id2")).toBe(false);
 		});
 
@@ -318,32 +365,32 @@ describe("DurableObjectQueue", () => {
 			});
 			await queue.alarm();
 			expect(queue.routeInFailedState.size).toBe(0);
-			expect(queue.service.fetch).toHaveBeenCalledTimes(2);
+			expect(getFetchMock(queue)).toHaveBeenCalledTimes(2);
 		});
 	});
 
 	describe("disableSQLite", () => {
-		it("should not initialize the sqlite storage", async () => {
+		it("should not initialize the sqlite storage", () => {
 			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
-			expect(queue.sql.exec).not.toHaveBeenCalled();
+			expect(getSqlExecMock(queue)).not.toHaveBeenCalled();
 		});
 
 		it("should not write to the sqlite storage on failed state", async () => {
 			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			await queue.addToFailedState(createMessage("id"));
-			expect(queue.sql.exec).not.toHaveBeenCalled();
+			expect(getSqlExecMock(queue)).not.toHaveBeenCalled();
 		});
 
 		it("should not read from the sqlite storage on checkSyncTable", () => {
 			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			queue.checkSyncTable(createMessage("id"));
-			expect(queue.sql.exec).not.toHaveBeenCalled();
+			expect(getSqlExecMock(queue)).not.toHaveBeenCalled();
 		});
 
 		it("should not write to sql on successful revalidation", async () => {
 			const queue = createDurableObjectQueue({ fetchDuration: 10, disableSQLite: true });
 			await queue.revalidate(createMessage("id"));
-			expect(queue.sql.exec).not.toHaveBeenCalled();
+			expect(getSqlExecMock(queue)).not.toHaveBeenCalled();
 		});
 	});
 });

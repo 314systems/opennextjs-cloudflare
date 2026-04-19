@@ -106,10 +106,11 @@ export async function getDeploymentMapping(
 		...(maxVersionAgeDays !== undefined ? { afterTimeMs: Date.now() - maxVersionAgeDays * MS_PER_DAY } : {}),
 	});
 
+	const latestDeployedVersionId = deployedVersions[0]?.id;
 	const existingMapping =
-		deployedVersions.length === 0
+		!latestDeployedVersionId
 			? {}
-			: await getExistingDeploymentMapping(scriptName, deployedVersions[0]?.id, {
+			: await getExistingDeploymentMapping(scriptName, latestDeployedVersionId, {
 					client,
 					accountId,
 				});
@@ -144,10 +145,11 @@ export function updateDeploymentMapping(
 ): Record<string, string> {
 	const newMapping: Record<string, string> = { [deploymentId]: CURRENT_VERSION_ID };
 	const versionIds = new Set(versions.map((v) => v.id));
+	const latestVersionId = versions[0]?.id;
 
 	for (const [deployment, version] of Object.entries(mapping)) {
-		if (version === CURRENT_VERSION_ID && versions.length > 0) {
-			newMapping[deployment] = versions[0]?.id;
+		if (version === CURRENT_VERSION_ID && latestVersionId) {
+			newMapping[deployment] = latestVersionId;
 		} else if (versionIds.has(version)) {
 			newMapping[deployment] = version;
 		}
