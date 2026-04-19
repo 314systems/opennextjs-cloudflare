@@ -1,45 +1,58 @@
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
 import { build } from "esbuild";
+
+interface ImagesConfig {
+	remotePatterns?: unknown[];
+	localPatterns?: unknown[];
+	deviceSizes?: number[];
+	imageSizes?: number[];
+	qualities?: number[];
+	formats?: string[];
+	minimumCacheTTL?: number;
+	dangerouslyAllowSVG?: boolean;
+	contentSecurityPolicy?: string;
+	contentDispositionType?: string;
+	maximumRedirects?: number;
+}
+
+interface ImagesManifest {
+	images?: ImagesConfig;
+}
 
 /**
  * Compiles the initialization code for the workerd runtime
  */
 export async function compileImages(options: BuildOptions): Promise<void> {
-	const currentDir = path.join(path.dirname(fileURLToPath(import.meta.url)));
-	const templatesDir = path.join(currentDir, "../../templates");
-	const imagesPath = path.join(templatesDir, "images.js");
+	const imagesPath = path.join(import.meta.dirname, "../../templates", "images.js");
+	const imagesManifestPath = path.join(options.appBuildOutputPath, ".next", "images-manifest.json");
 
-	const imagesManifestPath = path.join(options.appBuildOutputPath, ".next/images-manifest.json");
-	const imagesManifest = existsSync(imagesManifestPath)
-		? JSON.parse(await readFile(imagesManifestPath, { encoding: "utf-8" }))
-		: {};
+	let imagesManifest: ImagesManifest = {};
+	try {
+		const fileContent = await readFile(imagesManifestPath, "utf-8");
+		imagesManifest = JSON.parse(fileContent) as ImagesManifest;
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+	}
 
-	const __IMAGES_REMOTE_PATTERNS__ = JSON.stringify(imagesManifest?.images?.remotePatterns ?? []);
-	const __IMAGES_LOCAL_PATTERNS__ = JSON.stringify(
-		imagesManifest?.images?.localPatterns ?? defaultLocalPatterns
-	);
-	const __IMAGES_DEVICE_SIZES__ = JSON.stringify(imagesManifest?.images?.deviceSizes ?? defaultDeviceSizes);
-	const __IMAGES_IMAGE_SIZES__ = JSON.stringify(imagesManifest?.images?.imageSizes ?? defaultImageSizes);
-	const __IMAGES_QUALITIES__ = JSON.stringify(imagesManifest?.images?.qualities ?? defaultQualities);
-	const __IMAGES_FORMATS__ = JSON.stringify(imagesManifest?.images?.formats ?? defaultFormats);
+	const images = imagesManifest.images ?? {};
+	const __IMAGES_REMOTE_PATTERNS__ = JSON.stringify(images.remotePatterns ?? []);
+	const __IMAGES_LOCAL_PATTERNS__ = JSON.stringify(images.localPatterns ?? defaultLocalPatterns);
+	const __IMAGES_DEVICE_SIZES__ = JSON.stringify(images.deviceSizes ?? defaultDeviceSizes);
+	const __IMAGES_IMAGE_SIZES__ = JSON.stringify(images.imageSizes ?? defaultImageSizes);
+	const __IMAGES_QUALITIES__ = JSON.stringify(images.qualities ?? defaultQualities);
+	const __IMAGES_FORMATS__ = JSON.stringify(images.formats ?? defaultFormats);
 	const __IMAGES_MINIMUM_CACHE_TTL_SEC__ = JSON.stringify(
-		imagesManifest?.images?.minimumCacheTTL ?? defaultMinimumCacheTTLSec
+		images.minimumCacheTTL ?? defaultMinimumCacheTTLSec
 	);
-	const __IMAGES_ALLOW_SVG__ = JSON.stringify(Boolean(imagesManifest?.images?.dangerouslyAllowSVG));
+	const __IMAGES_ALLOW_SVG__ = JSON.stringify(Boolean(images.dangerouslyAllowSVG));
 	const __IMAGES_CONTENT_SECURITY_POLICY__ = JSON.stringify(
-		imagesManifest?.images?.contentSecurityPolicy ?? "script-src 'none'; frame-src 'none'; sandbox;"
+		images.contentSecurityPolicy ?? "script-src 'none'; frame-src 'none'; sandbox;"
 	);
-	const __IMAGES_CONTENT_DISPOSITION__ = JSON.stringify(
-		imagesManifest?.images?.contentDispositionType ?? "attachment"
-	);
-	const __IMAGES_MAX_REDIRECTS__ = JSON.stringify(
-		imagesManifest?.images?.maximumRedirects ?? defaultMaxRedirects
-	);
+	const __IMAGES_CONTENT_DISPOSITION__ = JSON.stringify(images.contentDispositionType ?? "attachment");
+	const __IMAGES_MAX_REDIRECTS__ = JSON.stringify(images.maximumRedirects ?? defaultMaxRedirects);
 
 	await build({
 		entryPoints: [imagesPath],

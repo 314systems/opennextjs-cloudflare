@@ -1,3 +1,5 @@
+import process from "node:process";
+
 import { type BuildOptions } from "@opennextjs/aws/build/helper.js";
 import { getPlatformProxy, type GetPlatformProxyOptions } from "wrangler";
 

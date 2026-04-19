@@ -23,8 +23,8 @@ export function inlineLoadManifest(updater: ContentUpdater, buildOpts: BuildOpti
 			}),
 			contentFilter: /function loadManifest\(/,
 			callback: async ({ contents }) => {
-				contents = await patchCode(contents, await getLoadManifestRule(buildOpts));
-				contents = await patchCode(contents, await getEvalManifestRule(buildOpts));
+				contents = patchCode(contents, await getLoadManifestRule(buildOpts));
+				contents = patchCode(contents, await getEvalManifestRule(buildOpts));
 				return contents;
 			},
 		},

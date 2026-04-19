@@ -1,4 +1,4 @@
-import { appendFile, mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import type { BuildOptions } from "@opennextjs/aws/build/helper.js";
@@ -11,18 +11,16 @@ export async function compileCacheAssetsManifestSqlFile(
 	options: BuildOptions,
 	metaFiles: TagCacheMetaFile[]
 ): Promise<void> {
-	const outputPath = path.join(options.outputDir, "cloudflare/cache-assets-manifest.sql");
+	const outputPath = path.join(options.outputDir, "cloudflare", "cache-assets-manifest.sql");
+
+	let sqlContent = `CREATE TABLE IF NOT EXISTS tags (tag TEXT NOT NULL, path TEXT NOT NULL, UNIQUE(tag, path) ON CONFLICT REPLACE);
+CREATE TABLE IF NOT EXISTS revalidations (tag TEXT NOT NULL, revalidatedAt INTEGER NOT NULL, UNIQUE(tag) ON CONFLICT REPLACE);\n`;
+
+	if (metaFiles.length > 0) {
+		const values = metaFiles.map(({ tag, path }) => `(${JSON.stringify(tag.S)}, ${JSON.stringify(path.S)})`);
+		sqlContent += `INSERT INTO tags (tag, path) VALUES ${values.join(", ")};\n`;
+	}
 
 	await mkdir(path.dirname(outputPath), { recursive: true });
-	await writeFile(
-		outputPath,
-		`CREATE TABLE IF NOT EXISTS tags (tag TEXT NOT NULL, path TEXT NOT NULL, UNIQUE(tag, path) ON CONFLICT REPLACE);
-     CREATE TABLE IF NOT EXISTS revalidations (tag TEXT NOT NULL, revalidatedAt INTEGER NOT NULL, UNIQUE(tag) ON CONFLICT REPLACE);\n`
-	);
-
-	const values = metaFiles.map(({ tag, path }) => `(${JSON.stringify(tag.S)}, ${JSON.stringify(path.S)})`);
-
-	if (values.length) {
-		await appendFile(outputPath, `INSERT INTO tags (tag, path) VALUES ${values.join(", ")};`);
-	}
+	await writeFile(outputPath, sqlContent);
 }

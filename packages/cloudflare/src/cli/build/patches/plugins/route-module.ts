@@ -25,7 +25,7 @@ export function patchRouteModules(updater: ContentUpdater, buildOpts: BuildOptio
 			versions: ">=15.4.0",
 			// app route doesn't have getIncrementalCache, but we still need to patch the composable cache handlers there
 			contentFilter: /(getIncrementalCache\(|loadCustomCacheHandlers\()/,
-			callback: async ({ contents }) => {
+			callback: ({ contents }) => {
 				const { outputDir } = buildOpts;
 
 				const outputPath = path.join(outputDir, "server-functions/default");

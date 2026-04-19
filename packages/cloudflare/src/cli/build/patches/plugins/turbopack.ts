@@ -220,7 +220,7 @@ export const patchTurbopackRuntime: CodePatcher = {
 				escape: false,
 			}),
 			contentFilter: /loadRuntimeChunkPath/,
-			patchCode: async ({ code, tracedFiles, filePath }) => {
+			patchCode: ({ code, tracedFiles, filePath }) => {
 				const mappings = discoverExternalModuleMappings(filePath);
 				const externalImportRule = buildExternalImportRule(mappings, tracedFiles, code);
 				let patched = patchCode(code, externalImportRule);

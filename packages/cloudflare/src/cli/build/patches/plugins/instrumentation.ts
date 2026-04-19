@@ -42,7 +42,9 @@ export function patchInstrumentation(updater: ContentUpdater, buildOpts: BuildOp
 
 	return {
 		name: "patch-instrumentation",
-		setup() {},
+		setup() {
+			/* empty */
+		},
 	};
 }
 

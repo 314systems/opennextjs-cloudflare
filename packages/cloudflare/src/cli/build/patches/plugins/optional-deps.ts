@@ -27,7 +27,7 @@ export function handleOptionalDependencies(dependencies: string[]): {
 	return {
 		name,
 
-		setup: async (build: PluginBuild): Promise<void> => {
+		setup: (build: PluginBuild): void => {
 			build.onResolve({ filter }, async ({ path, pluginData, ...options }): Promise<OnResolveResult> => {
 				// Use ESBuild to resolve the dependency.
 				// Because the plugin asks ESBuild to resolve the path we just received,

@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -24,12 +23,14 @@ export async function conditionalAppendFile(
 		appendPrefix?: string;
 	} = {}
 ): Promise<void> {
-	const fileExists = existsSync(filepath);
-	const maybeFileContent = fileExists ? await readFile(filepath, "utf8") : "";
-
-	if (!fileExists) {
-		const dir = path.dirname(filepath);
-		await mkdir(dir, { recursive: true });
+	let maybeFileContent = "";
+	let fileExists = true;
+	try {
+		maybeFileContent = await readFile(filepath, "utf8");
+	} catch (err: unknown) {
+		if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+		fileExists = false;
+		await mkdir(path.dirname(filepath), { recursive: true });
 	}
 
 	if (!fileExists || appendIf(maybeFileContent)) {

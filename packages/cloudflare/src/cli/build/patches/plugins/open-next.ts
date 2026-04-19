@@ -60,7 +60,7 @@ export function patchSetWorkingDirectory(updater: ContentUpdater, buildOpts: Bui
 		{
 			filter: getCrossPlatformPathRegex(indexPath),
 			contentFilter: /function setNextjsServerWorkingDirectory\(/,
-			callback: async ({ contents }) => patchCode(contents, workingDirectoryRule),
+			callback: ({ contents }) => patchCode(contents, workingDirectoryRule),
 		},
 	]);
 }

@@ -23,7 +23,7 @@ export function patchNextServer(updater: ContentUpdater, buildOpts: BuildOptions
 				escape: false,
 			}),
 			contentFilter: /getBuildId\(/,
-			callback: async ({ contents }) => {
+			callback: ({ contents }) => {
 				const { outputDir } = buildOpts;
 
 				contents = patchCode(contents, buildIdRule);
