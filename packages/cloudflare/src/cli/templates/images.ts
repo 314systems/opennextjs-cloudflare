@@ -251,8 +251,8 @@ export function parseCdnCgiImageRequest(
 	if (
 		match === null ||
 		// Valid URLs have at least one option
-		!match.groups?.options ||
-		!match.groups?.url
+		!match.groups.options ||
+		!match.groups.url
 	) {
 		return { ok: false, message: "Invalid /cdn-cgi/image/ URL format" };
 	}

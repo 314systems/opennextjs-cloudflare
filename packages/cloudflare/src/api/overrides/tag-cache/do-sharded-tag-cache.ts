@@ -474,7 +474,7 @@ class ShardedDOTagCache implements NextModeTagCache {
 	 * calls within the same request avoid duplicate shard fetches.
 	 */
 	async #resolveTagData(tags: string[]): Promise<Map<string, TagData | null>> {
-		const store = globalThis.__openNextAls?.getStore();
+		const store = globalThis.__openNextAls.getStore();
 		const itemsCache = store?.requestCache.getOrCreate<string, TagData | null>("do-sharded:tagItems");
 
 		const result = new Map<string, TagData | null>();

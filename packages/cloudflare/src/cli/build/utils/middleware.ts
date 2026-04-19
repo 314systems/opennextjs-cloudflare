@@ -22,5 +22,5 @@ export function useNodeMiddleware(options: buildHelper.BuildOptions): boolean {
 
 	// Look for the node middleware
 	const functionsConfigManifest = loadFunctionsConfigManifest(buildOutputDotNextDir);
-	return Boolean(functionsConfigManifest?.functions["/_middleware"]);
+	return Boolean(functionsConfigManifest.functions["/_middleware"]);
 }

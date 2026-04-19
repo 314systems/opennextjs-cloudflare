@@ -177,7 +177,7 @@ function inSSG<
 	const global = globalThis as InternalGlobalThis<CfProperties, Context>;
 	// Note: Next.js sets globalThis.__NEXT_DATA__.nextExport to true for SSG routes
 	// source: https://github.com/vercel/next.js/blob/4e394608423/packages/next/src/export/worker.ts#L55-L57)
-	return global.__NEXT_DATA__?.nextExport === true;
+	return global.__NEXT_DATA__.nextExport === true;
 }
 
 /**
