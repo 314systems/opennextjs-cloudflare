@@ -68,7 +68,7 @@ export const patchResRevalidate: CodePatcher = {
 				}
 			),
 			contentFilter: /\.trustHostHeader/,
-			patchCode: ({ code }) => patchCode(code, rule),
+			patchCode: ({ code }) => Promise.resolve(patchCode(code, rule)),
 		},
 	],
 };

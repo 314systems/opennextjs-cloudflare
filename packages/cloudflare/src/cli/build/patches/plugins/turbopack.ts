@@ -226,7 +226,7 @@ export const patchTurbopackRuntime: CodePatcher = {
 				let patched = patchCode(code, externalImportRule);
 				patched = patchCode(patched, inlineChunksRule);
 
-				return `${patched}\n${inlineChunksFn(tracedFiles)}`;
+				return Promise.resolve(`${patched}\n${inlineChunksFn(tracedFiles)}`);
 			},
 		},
 	],

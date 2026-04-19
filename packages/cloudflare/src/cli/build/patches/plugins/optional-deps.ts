@@ -27,14 +27,14 @@ export function handleOptionalDependencies(dependencies: string[]): {
 	return {
 		name,
 
-		setup: (build: PluginBuild): void => {
+		setup: (build: PluginBuild) => {
 			build.onResolve({ filter }, async ({ path, pluginData, ...options }): Promise<OnResolveResult> => {
 				// Use ESBuild to resolve the dependency.
 				// Because the plugin asks ESBuild to resolve the path we just received,
 				// ESBuild will ask this plugin again.
 				// We use a marker in the pluginData to break the loop.
 				if (pluginData === marker) {
-					return {};
+					return Promise.resolve({});
 				}
 				const result = await build.resolve(path, {
 					...options,
@@ -44,22 +44,22 @@ export function handleOptionalDependencies(dependencies: string[]): {
 				// ESBuild reports error when the dependency is not installed.
 				// In such a case the OnLoad hook will inline a throwing implementation.
 				if (result.errors.length > 0) {
-					return {
+					return Promise.resolve({
 						path: `/${path}`,
 						namespace: nsMissingDependency,
 						pluginData: { name: path },
-					};
+					});
 				}
 
 				// Returns ESBuild resolution information when the dependency is installed.
-				return result;
+				return Promise.resolve(result);
 			});
 
 			// Replaces missing dependency with a throwing implementation.
 			build.onLoad({ filter: /.*/, namespace: nsMissingDependency }, ({ pluginData }) => {
-				return {
+				return Promise.resolve({
 					contents: `throw new Error('Missing optional dependency "${pluginData.name}"')`,
-				};
+				});
 			});
 		},
 	};
