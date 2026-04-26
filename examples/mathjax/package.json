@@ -1,0 +1,40 @@
+{
+	"name": "mathjax-demo",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "eslint",
+		"build:worker": "pnpm opennextjs-cloudflare build",
+		"preview:worker": "pnpm opennextjs-cloudflare preview",
+		"preview": "pnpm build:worker && pnpm preview:worker",
+		"e2e": "playwright test -c e2e/playwright.config.ts",
+		"e2e:dev": "playwright test -c e2e/playwright.dev.config.ts",
+		"build:worker-turbopack": "pnpm build:worker --openNextConfigPath open-next.turbopack.config.ts",
+		"e2e-turbopack": "playwright test -c e2e/playwright.turbopack.config.ts",
+		"cf-typegen": "wrangler types --env-interface CloudflareEnv"
+	},
+	"dependencies": {
+		"next": "16.2.4",
+		"react-dom": "19.2.5",
+		"react": "19.2.5"
+	},
+	"devDependencies": {
+		"@mathjax/mathjax-fira-font": "^4.1.1",
+		"@mdx-js/mdx": "^3.1.1",
+		"@opennextjs/cloudflare": "workspace:*",
+		"@playwright/test": "catalog:",
+		"@tailwindcss/postcss": "^4",
+		"@types/mdx": "^2.0.13",
+		"@types/node": "catalog:",
+		"@types/react-dom": "^19",
+		"@types/react": "^19",
+		"rehype-mathjax": "github:jajaperson/remark-math#mathjax4&path:packages/rehype-mathjax",
+		"remark-math": "^6.0.0",
+		"tailwindcss": "^4",
+		"wrangler": "catalog:"
+	}
+}
