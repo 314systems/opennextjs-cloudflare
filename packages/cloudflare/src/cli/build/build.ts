@@ -19,7 +19,7 @@ import { compileInit } from "./open-next/compile-init.js";
 import { compileSkewProtection } from "./open-next/compile-skew-protection.js";
 import { compileDurableObjects } from "./open-next/compileDurableObjects.js";
 import { createServerBundle } from "./open-next/createServerBundle.js";
-import { useNodeMiddleware } from "./utils/middleware.js";
+import { detectMiddlewareRuntime } from "./utils/middleware.js";
 import { getVersion } from "./utils/version.js";
 
 /**
@@ -67,10 +67,9 @@ export async function build(
 		buildNextjsApp(options);
 	}
 
-	// Make sure no Node.js middleware is used
-	if (useNodeMiddleware(options)) {
-		logger.error("Node.js middleware is not currently supported. Consider switching to Edge Middleware.");
-		process.exit(1);
+	const middlewareRuntime = detectMiddlewareRuntime(options);
+	if (middlewareRuntime === "node") {
+		logger.info("Detected Node.js middleware/proxy (Next 15.5+). Keeping Node middleware enabled.");
 	}
 
 	// Generate deployable bundle
