@@ -18,7 +18,7 @@ catalog:
   "@types/react": ^18
   "@types/react-dom": ^18
   "@types/yargs": ^17.0.33
-  esbuild: ^0.27.0
+  esbuild: ^0.25.0
   eslint: ^9.31.0
   eslint-plugin-import: ^2.31.0
   eslint-plugin-simple-import-sort: ^12.1.1
@@ -45,7 +45,7 @@ catalogs:
     "@types/react-dom": 19.0.4
     autoprefixer: 10.4.15
     next: 16.2.3
-    postcss: 8.4.27
+    postcss: 8.4.31
     react: 19.0.4
     react-dom: 19.0.4
     tailwindcss: 3.3.3
