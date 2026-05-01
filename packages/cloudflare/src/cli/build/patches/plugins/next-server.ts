@@ -1,7 +1,14 @@
 /**
  * Misc patches for `next-server.js`
  *
- * Note: we will probably need to revisit the patches when the Next adapter API lands
+ * Note: we will probably need to revisit these patches when Next's "Adapters API" lands.
+ *
+ * In this codebase, "Adapters API" means an official Next.js extension point that lets a
+ * deployment target customize runtime integration without patching private internals
+ * (for example, overriding request handling/caching/middleware loading via supported hooks
+ * instead of AST patching `next/dist/server/next-server.js`).
+ *
+ * Tracking issue: https://github.com/opennextjs/opennextjs-cloudflare/issues/972
  *
  * - Inline `getBuildId` as it relies on `readFileSync` that is not supported by workerd
  * - Override the cache and composable cache handlers
@@ -9,7 +16,7 @@
 
 import path from "node:path";
 
-import { type BuildOptions, getPackagePath } from "@opennextjs/aws/build/helper.js";
+import { compareSemver, type BuildOptions, getPackagePath } from "@opennextjs/aws/build/helper.js";
 import { patchCode } from "@opennextjs/aws/build/patch/astCodePatcher.js";
 import type { ContentUpdater, Plugin } from "@opennextjs/aws/plugins/content-updater.js";
 import { getCrossPlatformPathRegex } from "@opennextjs/aws/utils/regex.js";
@@ -39,8 +46,10 @@ export function patchNextServer(updater: ContentUpdater, buildOpts: BuildOptions
 				);
 				contents = patchCode(contents, createComposableCacheHandlersRule(composableCacheHandler));
 
-				// Node middleware are not supported on Cloudflare yet
-				contents = patchCode(contents, disableNodeMiddlewareRule);
+				// Keep the old safety patch for Next.js versions that predate stable Node middleware.
+				if (compareSemver(buildOpts.nextVersion, "<", "15.5.0")) {
+					contents = patchCode(contents, disableNodeMiddlewareRule);
+				}
 
 				contents = patchCode(contents, attachRequestMetaRule);
 
@@ -50,7 +59,7 @@ export function patchNextServer(updater: ContentUpdater, buildOpts: BuildOptions
 	]);
 }
 
-// Do not try to load Node middlewares
+// Do not try to load Node middlewares on old Next.js versions.
 export const disableNodeMiddlewareRule = `
 rule:
   pattern:
